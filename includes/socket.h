@@ -46,10 +46,10 @@ typedef struct socket_store_t{
     uint8_t lastSent;
 
     // This is the receiver portion
-    uint8_t rcvdBuff[SOCKET_BUFFER_SIZE];
     uint8_t lastRead;
     uint8_t lastRcvd;
     uint8_t nextExpected;
+    uint8_t rcvdBuff[SOCKET_BUFFER_SIZE];
 
     uint16_t RTT; //set the timeout to 2*RTT
     uint8_t effectiveWindow;

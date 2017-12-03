@@ -168,12 +168,17 @@ implementation{
 
    event void SendTimer.fired() {
 	socket_store_t temp;
+	uint8_t arr[globalTransfer+1];
 	uint16_t num;
 	uint16_t i;
 	uint16_t at;
 	uint16_t size;
 	bool found;
 	found = FALSE;
+	for(i = 0; i < globalTransfer+1; i++)
+	{
+		arr[i] = i;
+	}
 	//dbg(TRANSPORT_CHANNEL, "SendTimer fired for this node!\n");
 	//printf("size is %d\n", call Sockets.size());
 	for(i = 0; i < call Sockets.size(); i++)
@@ -195,7 +200,7 @@ implementation{
 	{
 		//printf("even here\n");
 		while (globalTransfer > 0) {
-			size = call Transport.write(fd, 0, globalTransfer);
+			size = call Transport.write(fd, arr, globalTransfer);
 			globalTransfer = globalTransfer - size;
 		}
 	}
@@ -430,6 +435,10 @@ implementation{
  				temp = myMsg->payload;
  				tempAddr = temp->dest;
  				//dbg(TRANSPORT_CHANNEL, "protocol is TCP! temp->flag = %d, temp->src = %d, temp->dest.port = %d, temp->dest.addr = %d\n", temp->flag, temp->src, tempAddr.port, tempAddr.addr);
+				for(i = 0; i < 128; i++)
+				{
+					//printf("%d\n",myMsg->payload[i]);
+				}
  				for (i = 0; i < call Sockets.size(); i++) {
 			         	temp2 = call Sockets.get(i);
 			         	if (temp->flag == 1 && tempAddr.port == temp2.src && temp2.state == LISTEN && tempAddr.addr == TOS_NODE_ID) {
@@ -537,6 +546,10 @@ implementation{
 					buffLen = myMsg->seq;
 					dbg(TRANSPORT_CHANNEL, "Recievced data from %d!\n", myMsg->src); 
 					call Transport.read(temp->fd, temp->sendBuff, buffLen);
+					for(j = 0; j < 128; j++)
+					{
+						//printf("%d\n", temp->sendBuff[j]);
+					}
 					packet.dest = myMsg->src;
 					packet.src = TOS_NODE_ID;
 					packet.seq = myMsg->seq + 1;

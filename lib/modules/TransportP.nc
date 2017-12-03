@@ -153,8 +153,10 @@ implementation {
 		pack write;
                 uint16_t sockLen;
 		uint8_t arr[2];
+		uint8_t send[8];
+		uint8_t sendBtemp[128];
                 uint16_t i,j,at,buffcount,next;
-                uint8_t buffsize, buffable, buffto;
+                uint8_t buffsize, buffable, buffto, lastAckd, sending;
                 bool found = FALSE;
 		write.src = TOS_NODE_ID;
 		write.protocol = PROTOCOL_TCP;
@@ -174,67 +176,159 @@ implementation {
                 }
                 else
                 {
-                        temp = call Sockets.get(at);
-                        if(bufflen > (128 - temp.lastWritten))
-                        {
-                                buffable = 128 - temp.lastWritten;
-                        }
-                        else
-                        {
-                                buffable = bufflen;
-                        }
-                        buffcount = 0;
-                        buffto = temp.lastWritten + buffable;
-                        j = temp.lastSent;
-                        for(i = 0; i < buffto; i++)
-                        {
-                                //temp.lastWritten++;
-                                temp.sendBuff[i] = j;
-                                j++;
-                                buffcount++;
-                        }
-			write.dest = temp.dest.addr;
-			write.TTL = MAX_TTL;
-			//printf("write.dest is %d\n", write.dest);
-                        temp.lastWritten = i;
-			//printf("lastwritten is %d\n", temp.lastWritten);
-                        temp.lastSent = j;
-			temp.flag = 4;
-			write.seq = i;
-			memcpy(write.payload, &temp, (uint8_t) sizeof(temp));
-
-			for (i = 0; i < call Confirmed.size(); i++)
+			if(bufflen > 0)
 			{
-				destination = call Confirmed.get(i);
-				if (write.dest == destination.Dest)
+	                        temp = call Sockets.get(at);
+        	                if(bufflen > (128 - temp.lastWritten))
+        	                {
+        	                        buffable = 128 - temp.lastWritten;
+	                        }
+        	                else
+                	        {
+	                                buffable = bufflen;
+        	                }
+                	        buffcount = 0;
+                        	buffto = temp.lastWritten + buffable;
+				j = temp.lastSent;
+        	                for(i = 0; i < buffto; i++)
+                	        {
+                        	        //temp.lastWritten++;
+                                	temp.sendBuff[i] = buff[j];
+					j++;
+        	                        buffcount++;
+                	        }
+				write.dest = temp.dest.addr;
+				write.TTL = MAX_TTL;
+				//printf("write.dest is %d\n", write.dest);
+                	        temp.lastWritten = buffcount;
+				//printf("lastwritten is %d\n", temp.lastWritten);
+	                        temp.lastSent = j;
+				temp.flag = 4;
+				write.seq = i;
+				lastAckd = temp.lastAck;
+				j = 0;
+				for(i = 0; i < 8; i++)
 				{
-					//printf("found dest\n");
-					next = destination.Next;
+					if(temp.lastSent < 128)
+					{
+						send[i] = buff[temp.lastSent];
+					}
+					else
+					{
+						j = i;
+						break;
+					}
+					temp.lastSent++;
 				}
-			}			
-			temp.lastWritten = 0;
-                        while(!call Sockets.isEmpty())
-                        {
-                                temp2 = call Sockets.front();
-                                if(temp.fd == temp2.fd)
-                                {
-                                        call TempSockets.pushfront(temp);
-                                }
-                                else
-                                {
-                                        call TempSockets.pushfront(temp2);
-                                }
-                                call Sockets.popfront();
-                        }
-                        while(!call TempSockets.isEmpty())
-                        {
-                                call Sockets.pushfront(call TempSockets.front());
-                                call TempSockets.popfront();
-                        }
-			//printf("sending tooooo: %d\n", next);
-			call Sender.send(write, next);
+				for(i = 0; i < 128; i++)
+				{
+					sendBtemp[i] = temp.sendBuff[i];
+				}
+				for(i = 0; i < j; i++)
+				{
+					temp.sendBuff[i] = send[i];
+				}
+				memcpy(write.payload, &temp, (uint8_t) sizeof(temp));
+				//write.payload = temp.sendBuff;
+				for(i = 0; i < 128; i++)
+				{
+					temp.sendBuff[i] = sendBtemp[i];
+				}
 
-                        return buffcount;
+				for (i = 0; i < call Confirmed.size(); i++)
+				{
+					destination = call Confirmed.get(i);
+					if (write.dest == destination.Dest)
+					{
+						//printf("found dest\n");
+						next = destination.Next;
+					}
+				}			
+                	        while(!call Sockets.isEmpty())
+                        	{
+                                	temp2 = call Sockets.front();
+	                                if(temp.fd == temp2.fd)
+        	                        {
+                	                        call TempSockets.pushfront(temp);
+                        	        }
+                                	else
+	                                {
+        	                                call TempSockets.pushfront(temp2);
+                	                }
+                        	        call Sockets.popfront();
+	                        }
+        	                while(!call TempSockets.isEmpty())
+                	        {
+                        	        call Sockets.pushfront(call TempSockets.front());
+                                	call TempSockets.popfront();
+	                        }
+				//printf("sending tooooo: %d\n", next);
+				call Sender.send(write, next);
+
+                        	return buffcount;
+			}
+			else
+			{
+				lastAckd = temp.lastAck;
+				for(i = 0; i < 8; i++)
+				{
+					lastAckd++;
+					if(lastAckd <= temp.lastWritten && lastAckd < 128)
+					{
+						send[i] = temp.sendBuff[lastAckd];
+						sending = i;
+					}
+					else
+					{
+						temp.lastAck = 0;
+						temp.lastWritten = 0;
+						break;
+					}
+				}
+				for(i = 0; i < 128; i++)
+				{
+					sendBtemp[i] = temp.sendBuff[i];
+				}
+				for(i = 0; i <= sending; i++)
+				{
+					temp.sendBuff[i] = send[i];
+				}
+				memcpy(write.payload, &temp, (uint8_t) sizeof(temp));
+				for(i = 0; i < 128; i++)
+				{
+					temp.sendBuff[i] = sendBtemp[i];
+				}
+                                for (i = 0; i < call Confirmed.size(); i++)
+                                {
+                                        destination = call Confirmed.get(i);
+                                        if (write.dest == destination.Dest)
+                                        {
+                                                //printf("found dest\n");
+                                                next = destination.Next;
+                                        }
+                                }
+                                while(!call Sockets.isEmpty())
+                                {
+                                        temp2 = call Sockets.front();
+                                        if(temp.fd == temp2.fd)
+                                        {
+                                                call TempSockets.pushfront(temp);
+                                        }
+                                        else
+                                        {
+                                                call TempSockets.pushfront(temp2);
+                                        }
+                                        call Sockets.popfront();
+                                }
+                                while(!call TempSockets.isEmpty())
+                                {
+                                        call Sockets.pushfront(call TempSockets.front());
+                                        call TempSockets.popfront();
+                                }
+                                //printf("sending tooooo: %d\n", next);
+                                call Sender.send(write, next);
+				return 0;
+			}
                 }
         }
    /**
@@ -310,12 +404,9 @@ implementation {
                         }
                         j = temp.nextExpected;
 			//printf("buffable is %d\n", buffable);
-			j = 0;
                         for(i = 0; i < buffable; i++)
                         {
-				//printf("buff is %d\n", buff[i]);
-                                temp.rcvdBuff[j] = j + temp.lastRcvd;
-                                //temp.sendBuff[i] = 255;
+                                temp.rcvdBuff[j] = buff[i];
                                 j++;
                                 buffcount++;
                                 if(temp.effectiveWindow > 0)
@@ -324,7 +415,6 @@ implementation {
                                 }
                         }
                         temp.lastRcvd = i;
-                        temp.lastWritten = 0;
                         if(temp.effectiveWindow == 0)
                         {
                                 temp.nextExpected = 0;
@@ -335,17 +425,16 @@ implementation {
                         }
 
 			//dbg(TRANSPORT_CHANNEL, "printing out rcvdBuff\n");
-			for(i = 0; i < temp.lastRcvd; i++)
+			i = 0;
+			while(i < 8)
 			{
-				dbg(TRANSPORT_CHANNEL,"%d\n", temp.rcvdBuff[i]);
-				if(i > 0 && i%6 == 0)
-				{
-					//printf("\n");
-				}
+				printf("%d ", temp.rcvdBuff[i]);
 				temp.rcvdBuff[i] = 255;
 				temp.effectiveWindow++;
+				temp.nextExpected--;
+				i++;
 			}
-			//printf("\n");
+			printf("\n");
 
 			//pushing stuff
                         while(!call Sockets.isEmpty())
