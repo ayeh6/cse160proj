@@ -95,7 +95,7 @@ implementation{
 
 	    case CMD_WHISPER:
 		dbg(COMMAND_CHANNEL, "Command Type: Whisper\n");
-		signal CommandHandler.whisper(buff[0], &buff[1]);
+		signal CommandHandler.whisper(&buff[0], &buff[1]);
 		break;
 
 	    case CMD_LIST:

@@ -146,7 +146,7 @@ class TestSim:
 	self.sendCMD(self.CMD_MESSAGE, client, message);
 
     def whisper(self, client, recepient, message):
-	self.sendCMD(self.CMD_WHISPER, client, "{0}{1}".format(chr(recepient), message));
+	self.sendCMD(self.CMD_WHISPER, client, "{0}{1}".format(recepient, message));
 
     def list(self, client):
 	self.sendCMD(self.CMD_LIST, client, "list command");
@@ -165,14 +165,11 @@ def main():
     s.addChannel(s.TRANSPORT_CHANNEL);
 
     s.runTime(1000);
-    s.hello(2, 41, "testName\r\n");
+    s.TestServer(2, 80);
     s.runTime(50);
-    s.message(2, "testMessage\r\n");
+    s.TestClient(3, 56, 80, 2, 10);
     s.runTime(50);
-    s.whisper(2, 3, "testWhisper\r\n");
-    s.runTime(50);
-    s.list(2);
-    s.runTime(50);
+    s.TestClose(3, 56, 80, 2);
 
 if __name__ == '__main__':
     main()

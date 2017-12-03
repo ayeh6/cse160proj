@@ -85,8 +85,11 @@ implementation{
    uint32_t recieveTime = 0;
    uint32_t attemptTime = 4294967295;
    uint32_t RTT = 0;
+   uint32_t sendCount = 0;
+   uint32_t dropCount = 0;
    bool connected = FALSE;
    bool recieveAck = FALSE;
+   bool initialSend = TRUE;
    socket_t fd;
    int16_t globalTransfer = 0;
    // Prototypes
@@ -198,10 +201,26 @@ implementation{
 	//printf("also here\n");
 	if (/*temp.lastWritten == 0 && */found)
 	{
-		//printf("even here\n");
-		while (globalTransfer > 0) {
+		if (initialSend == TRUE) {
+			printf("gTransfer = %d\n", globalTransfer);
 			size = call Transport.write(fd, arr, globalTransfer);
 			globalTransfer = globalTransfer - size;
+			initialSend = FALSE;
+			printf("gTransfer = %d\n", globalTransfer);
+		}
+		while (globalTransfer > 0) {
+			if (sendCount >= 10000) {
+				size = call Transport.write(fd, 0, 0);
+				globalTransfer = globalTransfer - size;
+				dropCount = 0;
+				sendCount = 0;
+			}
+			printf("gTransfer = %d\n", globalTransfer);
+			dropCount++;
+			if (dropCount >= 40000) {
+				break;
+			} 
+			sendCount++;
 		}
 	}
    }
@@ -516,6 +535,7 @@ implementation{
                 				call Sockets.pushfront(call TempSockets.front());
                 				call TempSockets.popfront();
         				}
+					initialSend = TRUE;
 					call SendTimer.startPeriodic(25000);
         				call Sender.send(packet, next);
 				}
@@ -589,6 +609,7 @@ implementation{
 				if (temp->flag == 5 /*&& tempAddr.port == temp2.src && temp->state == ESTABLISHED && temp2.state == ESTABLISHED*/) {
 					dbg(TRANSPORT_CHANNEL, "Recieved dataAck from %d!\n", myMsg->src);
 					recieveAck = TRUE;
+					sendCount = 10000;
 				}
 				if (temp->flag == 6 && tempAddr.port == temp2.src) {
 					while (!call Sockets.isEmpty()) {
@@ -821,12 +842,25 @@ implementation{
 		}
 	}
 
-   	event void CommandHandler.whisper(uint16_t recipient, char* message) {
+   	event void CommandHandler.whisper(char* recipient, char* message) {
 		uint8_t i;
  		bool printUser;
  		i = 0;
  		printUser = TRUE;
- 		printf("Whisper for %d: ", recipient);
+		while(printUser) {
+			//printf("ding\n");
+			if (recipient[i] == '\n') {
+				printf("%c", recipient[i]);
+				printUser = FALSE;
+			}
+			else {
+				printf("%c", recipient[i]);
+				i++;
+			}
+		}
+ 		printf("\n");
+		printUser = TRUE;
+		//i--;
  		while(printUser) {
          		if (message[i] == '\n') {
                  		printf("%c", message[i]);

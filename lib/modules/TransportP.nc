@@ -195,7 +195,7 @@ implementation {
                         	        //temp.lastWritten++;
                                 	temp.sendBuff[i] = buff[j];
 					j++;
-        	                        buffcount++;
+        	                        //buffcount++;
                 	        }
 				write.dest = temp.dest.addr;
 				write.TTL = MAX_TTL;
@@ -212,6 +212,7 @@ implementation {
 					if(temp.lastSent < 128)
 					{
 						send[i] = buff[temp.lastSent];
+						buffcount++;
 					}
 					else
 					{
@@ -269,6 +270,7 @@ implementation {
 			}
 			else
 			{
+				buffcount = 0;
 				lastAckd = temp.lastAck;
 				for(i = 0; i < 8; i++)
 				{
@@ -327,7 +329,7 @@ implementation {
                                 }
                                 //printf("sending tooooo: %d\n", next);
                                 call Sender.send(write, next);
-				return 0;
+				return sending;
 			}
                 }
         }
