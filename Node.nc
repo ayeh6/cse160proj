@@ -782,9 +782,66 @@ implementation{
 		dbg(TRANSPORT_CHANNEL, "Closed.\n");
 	}
 
-   event void CommandHandler.setAppServer(){}
+   	event void CommandHandler.setAppServer(){}
 
-   event void CommandHandler.setAppClient(){}
+	event void CommandHandler.setAppClient(uint8_t client, char* username){
+		uint8_t i;
+		bool printUser;
+		i = 0;
+		printUser = TRUE;
+		printf("Username: ");
+		while(printUser) {
+			if (username[i] == '\n') {
+				printf("%c", username[i]);
+				printUser = FALSE;
+			}
+			else {
+				printf("%c", username[i]);
+				i++;
+			}
+		}
+		printf("Client Number: %d\n", client);
+	}
+
+   	event void CommandHandler.message(char* message) {
+		uint8_t i;
+		bool printUser;
+		i = 0;
+		printUser = TRUE;
+		printf("Message: ");
+		while(printUser) {
+        		if (message[i] == '\n') {
+                		printf("%c", message[i]);
+                		printUser = FALSE;
+        		}
+        		else {
+                		printf("%c", message[i]);
+                		i++;
+        		}
+		}
+	}
+
+   	event void CommandHandler.whisper(uint16_t recipient, char* message) {
+		uint8_t i;
+ 		bool printUser;
+ 		i = 0;
+ 		printUser = TRUE;
+ 		printf("Whisper for %d: ", recipient);
+ 		while(printUser) {
+         		if (message[i] == '\n') {
+                 		printf("%c", message[i]);
+                 		printUser = FALSE;
+         		}
+         		else {
+                 		printf("%c", message[i]);
+                 		i++;
+         		}
+ 		}
+	}
+
+   	event void CommandHandler.list() {
+		printf("insert list here\n");
+}
 
    void makePack(pack *Package, uint16_t src, uint16_t dest, uint16_t TTL, uint16_t protocol, uint16_t seq, uint8_t* payload, uint8_t length){
       Package->src = src;
