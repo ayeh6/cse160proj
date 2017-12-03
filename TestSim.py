@@ -15,6 +15,10 @@ class TestSim:
     CMD_TEST_CLIENT = 4
     CMD_TEST_SERVER = 5
     CMD_TEST_CLOSE = 7
+    CMD_HELLO = 8
+    CMD_MESSAGE = 10
+    CMD_WHISPER = 11
+    CMD_LIST = 12
     # CHANNELS - see includes/channels.h
     COMMAND_CHANNEL="command";
     GENERAL_CHANNEL="general";
