@@ -134,6 +134,18 @@ class TestSim:
     def addChannel(self, channelName, out=sys.stdout):
         print 'Adding Channel', channelName;
         self.t.addChannel(channelName, out);
+	
+    def hello(self, client, clientPort, username):
+	self.sendCMD(self.CMD_HELLO, client, "{0}{1}".format(chr(clientPort), username));
+
+    def message(self, client, message):
+	self.sendCMD(self.CMD_MESSAGE, client, message);
+
+    def whisper(self, client, recepient, message):
+	self.sendCMD(self.CMD_WHISPER, client, "{0}{1}".format(chr(recepient), message));
+
+    def list(self, client):
+	self.sendCMD(self.CMD_LIST, client, "list command");
 
 def main():
     s = TestSim();
@@ -149,32 +161,14 @@ def main():
     s.addChannel(s.TRANSPORT_CHANNEL);
 
     s.runTime(1000);
-    s.TestServer(2, 80);
+    s.hello(2, 41, "testName\r\n");
     s.runTime(50);
-   # s.TestServer(9, 90);
-  #  s.runTime(50);
-   # s.TestServer(9, 91);
-   # s.runTime(50);
-    s.TestClient(3, 65, 80, 2, 255);
+    s.message(2, "testMessage\r\n");
     s.runTime(50);
-  #  s.TestClient(1, 50, 90, 9, 128);
-   # s.runTime(50);
-   # s.TestClient(2, 30, 91, 9, 245);
-   # s.runTime(50);
-    s.TestClose(3, 65, 80, 2);
+    s.whisper(2, 3, "testWhisper\r\n");
     s.runTime(50);
-#    s.TestClose(1, 50, 90, 9);
- #   s.runTime(50);
-   # s.TestClose(2, 30, 91, 9);
-   # s.runTime(50);
-  #  s.TestClient(3, 65, 80, 2, 255);
-   # s.runTime(50);
-  #  s.TestClient(1, 50, 90, 9, 128);
-   # s.runTime(50);
-   # s.ping(3,4,"hi");
-   # s.runTime(50);
-   # s.ping(1, 2, "does this work? da da");
-   # s.runTime(50);
+    s.list(2);
+    s.runTime(50);
 
 if __name__ == '__main__':
     main()
