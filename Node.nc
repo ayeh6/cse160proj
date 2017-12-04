@@ -709,7 +709,7 @@ implementation{
                  			call Sender.send(packet, next);
          			}
 				if (temp->flag == 8 && tempAddr.port == temp2.src) {
-					uint8_t arr[globalTransfer+1];
+					char arr[globalTransfer+1];
 					uint16_t size;
                 			recieveTime = call LocalTime.get();
 				        RTT = recieveTime - sendTime;
@@ -755,7 +755,7 @@ implementation{
 					//printf("initial GTransfer: %d\n", globalTransfer);
 					if (found) {
 						for (i = 0; i < globalTransfer; i++) {
-							arr[i] = i;
+							arr[i] = globalChar[i];
 						}
 						size = call Transport.write(fd, arr, globalTransfer);
 						globalTransfer = globalTransfer - size;
@@ -763,6 +763,35 @@ implementation{
 					}
 					//send function here
 					
+				}
+				if (temp->flag == 9 /*&& tempAddr.port == temp2.src && temp->state == ESTABLISHED && temp2.state == ESTABLISHED*/) {
+					uint16_t size;
+					uint16_t i;
+					char arr2[maxTransfer];
+					//dbg(TRANSPORT_CHANNEL, "Recieved dataAck from %d!\n", myMsg->src);
+					//printf("post initial gTransfer: %d\n", globalTransfer);
+					if (globalTransfer > 0) {
+						//printf("hitting the first buffer\n");
+						size = call Transport.write(fd, 0, 0);
+						globalTransfer = globalTransfer - size;
+						//printf("globalTransfer: %d\n", globalTransfer);
+					}
+					else if (globalTransfer <= 0 && maxTransfer > 0) {
+						//printf("hitting the second buffer\n");
+						globalTransfer = maxTransfer;
+						maxTransfer = 0;
+						for (i = 0; i < globalTransfer; i++) {
+							arr2[i] = globalChar[i + 128];
+						}
+						for(i = 0; i < globalTransfer; i++)
+						{
+							//printf("%d\n", arr2[i]);
+						}
+						loop = FALSE;
+						size = call Transport.write(fd, arr2, globalTransfer);
+						globalTransfer = globalTransfer - size;
+						//printf("alternativeGlobalTransfer: %d\n", globalTransfer);
+					}
 				}
 			}
 			else {
@@ -971,11 +1000,13 @@ implementation{
 		while (!charFound) {
 			if (username[i] == '\n') {
 				globalChar[i] = username[i];
+				maxTransfer++;
 				globalTransfer++;
 				charFound = TRUE;
 			}
 			else {
 				globalChar[i] = username[i];
+				maxTransfer++;
 				globalTransfer++;
 				i++;
 			}
