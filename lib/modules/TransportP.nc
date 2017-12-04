@@ -148,7 +148,7 @@ implementation {
     * @return uint16_t - return the amount of data you are able to write
     *    from the pass buffer. This may be shorter then bufflen
     */
-            command uint16_t Transport.write(socket_t fd, uint8_t *buff, uint16_t bufflen) {
+            command uint16_t Transport.write(socket_t fd, uint8_t *buff, uint16_t bufflen, uint8_t flag) {
                 socket_store_t temp, temp2;
 		LinkState destination;
 		pack write;
@@ -212,7 +212,14 @@ implementation {
 				//printf("write.dest is %d\n", write.dest);
                 	        temp.lastWritten = j;
 				//printf("lastwritten is %d\n", temp.lastWritten);
-				temp.flag = 4;
+				if(flag != 8)
+				{
+					temp.flag = 4;
+				}
+				else
+				{
+					temp.flag = 9;
+				}
 				write.seq = i;
 				lastAckd = temp.lastAck;
 				j = 0;
