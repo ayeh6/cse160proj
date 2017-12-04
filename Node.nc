@@ -582,7 +582,7 @@ implementation{
 					arr = myMsg->payload;
 					buffLen = 8;
 					dbg(TRANSPORT_CHANNEL, "Recievced data from %d!\n", myMsg->src); 
-					call Transport.read(temp->fd, temp->sendBuff, buffLen);
+					call Transport.read(temp->fd, temp->sendBuff, buffLen, temp->flag);
 					for(j = 0; j < 128; j++)
 					{
 						//printf("%d\n", temp->sendBuff[j]);
@@ -768,7 +768,7 @@ implementation{
 					arr = myMsg->payload;
 					buffLen = 8;
 					dbg(TRANSPORT_CHANNEL, "Recievced data2 from %d!\n", myMsg->src); 
-					call Transport.read(temp->fd, temp->sendBuff, buffLen);
+					call Transport.read(temp->fd, temp->sendBuff, buffLen, temp->flag);
 					for(j = 0; j < 128; j++)
 					{
 						//printf("%d\n", temp->sendBuff[j]);
