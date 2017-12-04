@@ -541,12 +541,14 @@ implementation{
 					//call SendTimer.startPeriodic(25000);
 					//send ACK before data
         				call Sender.send(packet, next);
+					printf("initial GTransfer: %d\n", globalTransfer);
 					if (found) {
 						for (i = 0; i < globalTransfer; i++) {
 							arr[i] = i;
 						}
 						size = call Transport.write(fd, arr, globalTransfer);
 						globalTransfer = globalTransfer - size;
+						printf("globalTransfer: %d\n", globalTransfer);
 					}
 					//send function here
 					
@@ -621,9 +623,11 @@ implementation{
 				if (temp->flag == 5 /*&& tempAddr.port == temp2.src && temp->state == ESTABLISHED && temp2.state == ESTABLISHED*/) {
 					uint16_t size;
 					dbg(TRANSPORT_CHANNEL, "Recieved dataAck from %d!\n", myMsg->src);
+					printf("post initial gTransfer: %d\n", globalTransfer);
 					if (globalTransfer > 0) {
 						size = call Transport.write(fd, 0, 0);
 						globalTransfer = globalTransfer - size;
+						printf("globalTransfer: %d\n", globalTransfer);
 					}
 				}
 				if (temp->flag == 6 && tempAddr.port == temp2.src) {
@@ -756,7 +760,7 @@ implementation{
 		address.port = sourcePort;
 		serverAddress.addr = dest;
 		serverAddress.port = destPort;
-		globalTransfer = transfer;
+		globalTransfer = transfer+1;
 
 		if (call Transport.bind(fd, &address) == SUCCESS) {
 			sendTime = call LocalTime.get();

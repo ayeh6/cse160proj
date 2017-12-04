@@ -287,7 +287,7 @@ implementation {
 					if(temp.lastSent <= temp.lastWritten && temp.lastSent < 128)
 					{
 						send[i] = temp.sendBuff[temp.lastSent];
-						sending = i;
+						sending = i+1;
 						temp.lastSent++;
 					}
 					else
