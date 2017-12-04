@@ -576,6 +576,61 @@ implementation {
 			return success = FAIL;
 	}
 
+	command error_t Transport.connectUser(socket_t fd, socket_addr_t * addr) {
+		pack syn;
+		error_t success;
+		bool sent;
+		socket_store_t temp, temp2;
+		uint16_t next;
+		uint16_t i;
+		LinkState destination;
+		syn.dest = addr->addr;
+		syn.src = TOS_NODE_ID;
+		//dbg(TRANSPORT_CHANNEL, "TOS_NODE_ID = %d\n", TOS_NODE_ID);
+		syn.seq = 1;
+		syn.TTL = MAX_TTL;
+		syn.protocol = 4;
+		temp = call Sockets.get(fd);
+		temp.flag = 7;
+		temp.dest.port = addr->port;
+		temp.dest.addr = addr->addr;
+
+		while(!call Sockets.isEmpty())
+		{
+			temp2 = call Sockets.front();
+			if(temp.fd == temp2.fd)
+			{
+				call TempSockets.pushfront(temp);
+			}
+			else
+			{
+				call TempSockets.pushfront(temp2);
+			}
+			call Sockets.popfront();
+		}
+		while(!call TempSockets.isEmpty())
+		{
+			call Sockets.pushfront(call TempSockets.front());
+			call TempSockets.popfront();
+		}
+
+		memcpy(syn.payload, &temp, (uint8_t) sizeof(temp));
+		
+		for (i = 0; i < call Confirmed.size(); i++) {
+			destination = call Confirmed.get(i);
+			if (syn.dest == destination.Dest) {
+				next = destination.Next;
+				sent = TRUE;
+			}
+		}
+		
+		call Sender.send(syn, next);
+		if (sent == TRUE)
+			return success = SUCCESS;
+		else
+			return success = FAIL;
+	}
+
    /**
     * Closes the socket.
     * @param
