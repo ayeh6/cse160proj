@@ -549,7 +549,7 @@ implementation{
 						for (i = 0; i < globalTransfer; i++) {
 							arr[i] = i;
 						}
-						size = call Transport.write(fd, arr, globalTransfer);
+						size = call Transport.write(fd, arr, globalTransfer, temp->flag);
 						globalTransfer = globalTransfer - size;
 						//printf("globalTransfer: %d\n", globalTransfer);
 					}
@@ -631,7 +631,7 @@ implementation{
 					//printf("post initial gTransfer: %d\n", globalTransfer);
 					if (globalTransfer > 0) {
 						//printf("hitting the first buffer\n");
-						size = call Transport.write(fd, 0, 0);
+						size = call Transport.write(fd, 0, 0, temp->flag);
 						globalTransfer = globalTransfer - size;
 						//printf("globalTransfer: %d\n", globalTransfer);
 					}
@@ -647,7 +647,7 @@ implementation{
 							//printf("%d\n", arr2[i]);
 						}
 						loop = FALSE;
-						size = call Transport.write(fd, arr2, globalTransfer);
+						size = call Transport.write(fd, arr2, globalTransfer, temp->flag);
 						globalTransfer = globalTransfer - size;
 						//printf("alternativeGlobalTransfer: %d\n", globalTransfer);
 					}
@@ -757,7 +757,7 @@ implementation{
 						for (i = 0; i < globalTransfer; i++) {
 							arr[i] = globalChar[i];
 						}
-						size = call Transport.write(fd, arr, globalTransfer);
+						size = call Transport.write(fd, arr, globalTransfer, temp->flag);
 						globalTransfer = globalTransfer - size;
 						//printf("globalTransfer: %d\n", globalTransfer);
 					}
@@ -817,7 +817,7 @@ implementation{
 					//printf("post initial gTransfer: %d\n", globalTransfer);
 					if (globalTransfer > 0) {
 						//printf("hitting the first buffer\n");
-						size = call Transport.write(fd, 0, 0);
+						size = call Transport.write(fd, 0, 0, temp->flag);
 						globalTransfer = globalTransfer - size;
 						//printf("globalTransfer: %d\n", globalTransfer);
 					}
@@ -833,7 +833,7 @@ implementation{
 							//printf("%d\n", arr2[i]);
 						}
 						loop = FALSE;
-						size = call Transport.write(fd, arr2, globalTransfer);
+						size = call Transport.write(fd, arr2, globalTransfer, temp->flag);
 						globalTransfer = globalTransfer - size;
 						//printf("alternativeGlobalTransfer: %d\n", globalTransfer);
 					}
