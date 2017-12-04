@@ -55,7 +55,7 @@ typedef struct socket_store_t{
 
     uint16_t RTT; //set the timeout to 2*RTT
     uint8_t effectiveWindow;
-    char username[255];
+    char username[128];
     
 }socket_store_t;
 
