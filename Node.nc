@@ -627,7 +627,7 @@ implementation{
 					uint16_t size;
 					uint16_t i;
 					uint8_t arr2[maxTransfer];
-					//dbg(TRANSPORT_CHANNEL, "Recieved dataAck from %d!\n", myMsg->src);
+					dbg(TRANSPORT_CHANNEL, "Recieved dataAck from %d!\n", myMsg->src);
 					//printf("post initial gTransfer: %d\n", globalTransfer);
 					if (globalTransfer > 0) {
 						//printf("hitting the first buffer\n");
@@ -1055,6 +1055,9 @@ implementation{
 				globalTransfer++;
 				i++;
 			}
+		}
+		for (i = 0; i < globalTransfer; i++) {
+			printf("%c", globalChar[i]);
 		}
 		printf("username length = %d\n", globalTransfer);
 		if (call Transport.bind(fd, &address) == SUCCESS) {
