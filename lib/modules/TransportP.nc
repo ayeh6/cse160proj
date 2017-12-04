@@ -407,7 +407,7 @@ implementation {
     *    from the pass buffer. This may be shorter then bufflen
     */
     
-        command uint16_t Transport.read(socket_t fd, uint8_t *buff, uint16_t bufflen) {
+        command uint16_t Transport.read(socket_t fd, uint8_t *buff, uint16_t bufflen, uint8_t flag) {
                 socket_store_t temp, temp2;
                 uint16_t sockLen = call Sockets.size();
                 uint16_t i, j, at, buffcount;
