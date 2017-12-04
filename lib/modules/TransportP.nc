@@ -161,6 +161,10 @@ implementation {
 		write.src = TOS_NODE_ID;
 		write.protocol = PROTOCOL_TCP;
 		sockLen = call Sockets.size();
+		for(i = 0; i < 8; i++)
+		{
+			send[i] = 255;
+		}
                 for(i = 0; i < sockLen; i++)
                 {
                         temp = call Sockets.get(i);
@@ -427,6 +431,12 @@ implementation {
                         }
                         j = temp.nextExpected;
 			//printf("buffable is %d\n", buffable);
+			//printf("\nprinting buff\n");
+			for(i = 0; i < 10; i++)
+			{
+				//printf("%d\n", buff[i]);
+			}
+			//printf("\n");
                         for(i = 0; i < buffable; i++)
                         {
                                 temp.rcvdBuff[j] = buff[i];

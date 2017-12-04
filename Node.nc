@@ -577,7 +577,7 @@ implementation{
 				}
 				if (temp->flag == 4 /*&& tempAddr.port == temp2.src && temp->state == ESTABLISHED && temp2.state == ESTABLISHED*/) {
 					arr = myMsg->payload;
-					buffLen = myMsg->seq;
+					buffLen = 8;
 					dbg(TRANSPORT_CHANNEL, "Recievced data from %d!\n", myMsg->src); 
 					call Transport.read(temp->fd, temp->sendBuff, buffLen);
 					for(j = 0; j < 128; j++)
