@@ -38,6 +38,7 @@ implementation {
 		{
 			insert.sendBuff[i] = '\0';
 			insert.rcvdBuff[i] = '\0';
+			insert.username[i] = '\0';
 		}
 		call Sockets.pushback(insert);
 	}
