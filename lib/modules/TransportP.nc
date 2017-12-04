@@ -176,9 +176,10 @@ implementation {
                 }
                 else
                 {
+			temp = call Sockets.get(at);
 			if(bufflen > 0)
 			{
-	                        temp = call Sockets.get(at);
+	                        //temp = call Sockets.get(at);
         	                if(bufflen > (128 - temp.lastWritten))
         	                {
         	                        buffable = 128 - temp.lastWritten;
@@ -192,17 +193,14 @@ implementation {
 				j = temp.lastSent;
         	                for(i = 0; i < buffto; i++)
                 	        {
-                        	        //temp.lastWritten++;
                                 	temp.sendBuff[i] = buff[j];
 					j++;
-        	                        //buffcount++;
                 	        }
 				write.dest = temp.dest.addr;
 				write.TTL = MAX_TTL;
 				//printf("write.dest is %d\n", write.dest);
-                	        temp.lastWritten = buffcount;
+                	        temp.lastWritten = j;
 				//printf("lastwritten is %d\n", temp.lastWritten);
-	                        temp.lastSent = j;
 				temp.flag = 4;
 				write.seq = i;
 				lastAckd = temp.lastAck;
@@ -221,6 +219,7 @@ implementation {
 					}
 					temp.lastSent++;
 				}
+				temp.lastSent = buffcount;
 				for(i = 0; i < 128; i++)
 				{
 					sendBtemp[i] = temp.sendBuff[i];
@@ -270,15 +269,26 @@ implementation {
 			}
 			else
 			{
+				for(i = 0; i < 128; i++)
+				{
+					//printf("%d ",temp.sendBuff[i]);
+					if(i%8 == 0 && i != 0)
+					{
+					//	printf("\n");
+					}
+				}
+				//printf("\n");
 				buffcount = 0;
-				lastAckd = temp.lastAck;
+				lastAckd = temp.lastSent;
+				//printf("lastSent is %d\n", temp.lastSent);
+				//printf("lastWritten is %d\n", temp.lastWritten);
 				for(i = 0; i < 8; i++)
 				{
-					lastAckd++;
-					if(lastAckd <= temp.lastWritten && lastAckd < 128)
+					if(temp.lastSent <= temp.lastWritten && temp.lastSent < 128)
 					{
-						send[i] = temp.sendBuff[lastAckd];
+						send[i] = temp.sendBuff[temp.lastSent];
 						sending = i;
+						temp.lastSent++;
 					}
 					else
 					{
@@ -286,6 +296,11 @@ implementation {
 						temp.lastWritten = 0;
 						break;
 					}
+				}
+				//printf("printing sendarray\n");
+				for(i = 0; i < 8; i++)
+				{
+				//	printf("%d\n", send[i]);
 				}
 				for(i = 0; i < 128; i++)
 				{
@@ -421,6 +436,10 @@ implementation {
                                 {
                                         temp.effectiveWindow--;
                                 }
+				else
+				{
+					break;
+				}
                         }
                         temp.lastRcvd = i;
                         if(temp.effectiveWindow == 0)
@@ -434,14 +453,14 @@ implementation {
 
 			//dbg(TRANSPORT_CHANNEL, "printing out rcvdBuff\n");
 			i = 0;
-			while(i < 8)
+			while(temp.rcvdBuff[i] != 255)
 			{
 				printf("%d ", temp.rcvdBuff[i]);
 				temp.rcvdBuff[i] = 255;
 				temp.effectiveWindow++;
-				temp.nextExpected--;
 				i++;
 			}
+			temp.nextExpected = 0;
 			printf("\n");
 
 			//pushing stuff
