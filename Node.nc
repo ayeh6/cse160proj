@@ -625,22 +625,30 @@ implementation{
 				if (temp->flag == 5 /*&& tempAddr.port == temp2.src && temp->state == ESTABLISHED && temp2.state == ESTABLISHED*/) {
 					uint16_t size;
 					uint16_t i;
-					uint8_t arr2[maxTransfer+1];
+					uint8_t arr2[maxTransfer];
 					dbg(TRANSPORT_CHANNEL, "Recieved dataAck from %d!\n", myMsg->src);
-					printf("post initial gTransfer: %d\n", globalTransfer);
-					if ((globalTransfer > maxTransfer-127 && loop == TRUE) || (globalTransfer > 0 && loop == FALSE)) {
+					//printf("post initial gTransfer: %d\n", globalTransfer);
+					if (globalTransfer > 0) {
+						//printf("hitting the first buffer\n");
 						size = call Transport.write(fd, 0, 0);
 						globalTransfer = globalTransfer - size;
-						printf("globalTransfer: %d\n", globalTransfer);
+						//printf("globalTransfer: %d\n", globalTransfer);
 					}
-					else if (globalTransfer > 0 && globalTransfer <= maxTransfer-127 && loop == TRUE) {
+					else if (globalTransfer <= 0 && maxTransfer > 0) {
+						printf("hitting the second buffer\n");
+						globalTransfer = maxTransfer;
+						maxTransfer = 0;
 						for (i = 0; i < globalTransfer; i++) {
-							arr2[i] = maxTransfer-globalTransfer+i;
+							arr2[i] = i + 128;
+						}
+						for(i = 0; i < globalTransfer; i++)
+						{
+							//printf("%d\n", arr2[i]);
 						}
 						loop = FALSE;
 						size = call Transport.write(fd, arr2, globalTransfer);
 						globalTransfer = globalTransfer - size;
-						printf("alternativeGlobalTransfer: %d\n", globalTransfer);
+						//printf("alternativeGlobalTransfer: %d\n", globalTransfer);
 					}
 				}
 				if (temp->flag == 6 && tempAddr.port == temp2.src) {
@@ -775,10 +783,19 @@ implementation{
 		serverAddress.port = destPort;
 		maxTransfer = transfer+1;
 		globalTransfer = transfer+1;
-		if (transfer > 127) {
-			//globalTransfer = transfer-127;
-			loop = TRUE;
+		if (maxTransfer > 127)
+		{
+			maxTransfer = maxTransfer - 128;
+			globalTransfer = 128;
 		}
+		else
+		{
+			maxTransfer = 0;
+		}
+		//if (transfer > 127) {
+			//globalTransfer = transfer-127;
+		//	loop = TRUE;
+		//}
 
 		if (call Transport.bind(fd, &address) == SUCCESS) {
 			sendTime = call LocalTime.get();

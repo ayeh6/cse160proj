@@ -183,6 +183,9 @@ implementation {
 			temp = call Sockets.get(at);
 			if(bufflen > 0)
 			{
+				temp.lastWritten = 0;
+				temp.lastSent = 0;
+				temp.lastAck = 0;
 	                        //temp = call Sockets.get(at);
         	                if(bufflen > (128 - temp.lastWritten))
         	                {
@@ -288,7 +291,7 @@ implementation {
 				//printf("lastWritten is %d\n", temp.lastWritten);
 				for(i = 0; i < 8; i++)
 				{
-					if(temp.lastSent <= temp.lastWritten && temp.lastSent < 128)
+					if(temp.lastSent < temp.lastWritten && temp.lastSent < 128)
 					{
 						send[i] = temp.sendBuff[temp.lastSent];
 						sending = i+1;
@@ -296,11 +299,15 @@ implementation {
 					}
 					else
 					{
-						temp.lastAck = 0;
-						temp.lastWritten = 0;
-						break;
+						send[i] = 255;
 					}
 				}
+				/*if(sending < 8)
+				{
+					temp.lastAck = 0;
+					temp.lastWritten = 0;
+					temp.lastSent = 0;
+				}*/
 				//printf("printing sendarray\n");
 				for(i = 0; i < 8; i++)
 				{
@@ -432,7 +439,7 @@ implementation {
                         j = temp.nextExpected;
 			//printf("buffable is %d\n", buffable);
 			//printf("\nprinting buff\n");
-			for(i = 0; i < 10; i++)
+			for(i = 0; i < 8; i++)
 			{
 				//printf("%d\n", buff[i]);
 			}
@@ -451,6 +458,7 @@ implementation {
 					break;
 				}
                         }
+			temp.rcvdBuff[j] = 255;
                         temp.lastRcvd = i;
                         if(temp.effectiveWindow == 0)
                         {
@@ -470,7 +478,12 @@ implementation {
 				temp.effectiveWindow++;
 				i++;
 			}
+			temp.effectiveWindow = 128;
 			temp.nextExpected = 0;
+			for(i = 0; i < 128; i++)
+			{
+				temp.rcvdBuff[i] = 255;
+			}
 			printf("\n");
 
 			//pushing stuff
