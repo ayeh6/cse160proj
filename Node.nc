@@ -39,8 +39,8 @@ module Node{
    //timer to use to fire packets
    uses interface Timer<TMilli> as PeriodicTimer;
    //timers for clients/servers
-   uses interface Timer<TMilli> as SendTimer;
-   uses interface Timer<TMilli> as RecieveTimer;
+   //uses interface Timer<TMilli> as SendTimer;
+   //uses interface Timer<TMilli> as RecieveTimer;
    //random number used for timer to make sure it's spaced
    uses interface Random as Random;
    //list of neighboring nodes as seen by current node
@@ -85,8 +85,8 @@ implementation{
    uint32_t recieveTime = 0;
    uint32_t attemptTime = 4294967295;
    uint32_t RTT = 0;
-   uint32_t sendCount = 0;
-   uint32_t dropCount = 0;
+   //uint32_t sendCount = 0;
+   //uint32_t dropCount = 0;
    bool connected = FALSE;
    bool recieveAck = FALSE;
    bool initialSend = TRUE;
@@ -145,85 +145,85 @@ implementation{
 		algorithm();
    }
 
-   event void RecieveTimer.fired() {
-	socket_store_t temp;
-	uint16_t num;
-	uint16_t i;
-	uint16_t at;
-	bool found = FALSE;
+   //event void RecieveTimer.fired() {
+//	socket_store_t temp;
+//	uint16_t num;
+//	uint16_t i;
+//	uint16_t at;
+//	bool found = FALSE;
 	//dbg(TRANSPORT_CHANNEL, "RecieveTimer fired for this node!\n");
-	for(i = 0; i < call Sockets.size(); i++)
-	{
-        	temp = call Sockets.get(i);
-        	if(temp.fd == fd && found == FALSE/* && temp.state == ESTABLISHED*/)
-        	{
-                	found = TRUE;
-                	at = i;
+//	for(i = 0; i < call Sockets.size(); i++)
+//	{
+  //      	temp = call Sockets.get(i);
+    //    	if(temp.fd == fd && found == FALSE/* && temp.state == ESTABLISHED*/)
+      //  	{
+        //        	found = TRUE;
+          //      	at = i;
 			//printf("at is %d", at);
-        	}
-	}
-	if (found) {
+        //	}
+	//}
+	//if (found) {
 		//dbg(TRANSPORT_CHANNEL, "Recieve found?\n");
-		temp = call Sockets.get(at);
-		num = call Transport.read(temp.fd, 0, temp.lastWritten);
-	}
-   }
+	//	temp = call Sockets.get(at);
+	//	num = call Transport.read(temp.fd, 0, temp.lastWritten);
+	//}
+   //}
 
-   event void SendTimer.fired() {
-	socket_store_t temp;
-	uint8_t arr[globalTransfer+1];
-	uint16_t num;
-	uint16_t i;
-	uint16_t at;
-	uint16_t size;
-	bool found;
-	found = FALSE;
-	for(i = 0; i < globalTransfer+1; i++)
-	{
-		arr[i] = i;
-	}
+//   event void SendTimer.fired() {
+//	socket_store_t temp;
+//	uint8_t arr[globalTransfer+1];
+//	uint16_t num;
+//	uint16_t i;
+//	uint16_t at;
+//	uint16_t size;
+//	bool found;
+//	found = FALSE;
+//	for(i = 0; i < globalTransfer+1; i++)
+//	{
+//		arr[i] = i;
+//	}
 	//dbg(TRANSPORT_CHANNEL, "SendTimer fired for this node!\n");
 	//printf("size is %d\n", call Sockets.size());
-	for(i = 0; i < call Sockets.size(); i++)
-	{
-		temp = call Sockets.get(i);
+//	for(i = 0; i < call Sockets.size(); i++)
+//	{
+//		temp = call Sockets.get(i);
 		//printf("temp fd is %d, global fd is %d\n", temp.fd, fd);
-		if(temp.fd == fd && found == FALSE/* && temp.state == ESTABLISHED*/)
-		{
-			found = TRUE;
-			at = i;
-		}
-		//printf("is here\n");
-	}
-	if (found) {
-		temp = call Sockets.get(at);
-	}
+//		if(temp.fd == fd && found == FALSE/* && temp.state == ESTABLISHED*/)
+//		{
+//			found = TRUE;
+//			at = i;
+//		}
+//		//printf("is here\n");
+//	}
+//	if (found) {
+//		temp = call Sockets.get(at);
+//	}
 	//printf("also here\n");
-	if (/*temp.lastWritten == 0 && */found)
-	{
-		if (initialSend == TRUE) {
-			printf("gTransfer = %d\n", globalTransfer);
-			size = call Transport.write(fd, arr, globalTransfer);
-			globalTransfer = globalTransfer - size;
-			initialSend = FALSE;
-			printf("gTransfer = %d\n", globalTransfer);
-		}
-		while (globalTransfer > 0) {
-			if (sendCount >= 10000) {
-				size = call Transport.write(fd, 0, 0);
-				globalTransfer = globalTransfer - size;
-				dropCount = 0;
-				sendCount = 0;
-			}
-			printf("gTransfer = %d\n", globalTransfer);
-			dropCount++;
-			if (dropCount >= 40000) {
-				break;
-			} 
-			sendCount++;
-		}
-	}
-   }
+//	if (/*temp.lastWritten == 0 && */found)
+//	{
+//		if (initialSend == TRUE) {
+//			printf("gTransfer = %d\n", globalTransfer);
+//			size = call Transport.write(fd, arr, globalTransfer);
+//			globalTransfer = globalTransfer - size;
+//			initialSend = FALSE;
+//			printf("gTransfer = %d\n", globalTransfer);
+//		}
+//		while (globalTransfer > 0) {
+//			if (sendCount >= 10000) {
+//				size = call Transport.write(fd, 0, 0);
+//				globalTransfer = globalTransfer - size;
+//				dropCount = 0;
+//				sendCount = 0;
+//			}
+//			printf("gTransfer = %d\n", globalTransfer);
+//			dropCount++;
+//			if (dropCount >= 40000) {
+//				break;
+//			} 
+//			sendCount++;
+//		}
+//	}
+//   }
 
 
    event void AMControl.stopDone(error_t err){}
@@ -498,6 +498,8 @@ implementation{
                  			call Sender.send(packet, next);
          			}
          			if (temp->flag == 2 && tempAddr.port == temp2.src) {
+					uint8_t arr[globalTransfer+1];
+					uint16_t size;
                 			recieveTime = call LocalTime.get();
 				        RTT = recieveTime - sendTime;
         				dbg(TRANSPORT_CHANNEL, "SynAck packet recived into port %d, send = %d, recieve = %d, RTT = %d\n", temp2.src,  sendTime, recieveTime, RTT);
@@ -536,8 +538,18 @@ implementation{
                 				call TempSockets.popfront();
         				}
 					initialSend = TRUE;
-					call SendTimer.startPeriodic(25000);
+					//call SendTimer.startPeriodic(25000);
+					//send ACK before data
         				call Sender.send(packet, next);
+					if (found) {
+						for (i = 0; i < globalTransfer; i++) {
+							arr[i] = i;
+						}
+						size = call Transport.write(fd, arr, globalTransfer);
+						globalTransfer = globalTransfer - size;
+					}
+					//send function here
+					
 				}
 				if (temp->flag == 3 && tempAddr.port == temp2.src) {
         				while (!call Sockets.isEmpty()) {
@@ -557,7 +569,7 @@ implementation{
 						call Sockets.pushfront(call TempSockets.front());
 						call TempSockets.popfront();
                         		}
-					call RecieveTimer.startPeriodic(100000);
+					//call RecieveTimer.startPeriodic(100000);
                         		dbg(TRANSPORT_CHANNEL, "Ack1 packet recieved into port %d with RTT %d\n", temp2.src, RTT);
               				}
 				}
@@ -607,9 +619,12 @@ implementation{
 					call Sender.send(packet, next);
 				}
 				if (temp->flag == 5 /*&& tempAddr.port == temp2.src && temp->state == ESTABLISHED && temp2.state == ESTABLISHED*/) {
+					uint16_t size;
 					dbg(TRANSPORT_CHANNEL, "Recieved dataAck from %d!\n", myMsg->src);
-					recieveAck = TRUE;
-					sendCount = 10000;
+					if (globalTransfer > 0) {
+						size = call Transport.write(fd, 0, 0);
+						globalTransfer = globalTransfer - size;
+					}
 				}
 				if (temp->flag == 6 && tempAddr.port == temp2.src) {
 					while (!call Sockets.isEmpty()) {

@@ -295,6 +295,12 @@ implementation {
 				{
 					temp.sendBuff[i] = send[i];
 				}
+				write.dest = temp.dest.addr;
+				write.TTL = MAX_TTL;
+				//printf("write.dest is %d\n", write.dest);
+				//printf("lastwritten is %d\n", temp.lastWritten);
+				temp.flag = 4;
+				write.seq = i;
 				memcpy(write.payload, &temp, (uint8_t) sizeof(temp));
 				for(i = 0; i < 128; i++)
 				{

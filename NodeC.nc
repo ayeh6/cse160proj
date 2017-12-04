@@ -74,8 +74,8 @@ implementation {
     Node.Random -> Random;
 
     Node.PeriodicTimer -> PeriodicTimerC;
-    Node.SendTimer -> SendTimerC;
-    Node.RecieveTimer -> RecieveTimerC;
+    //Node.SendTimer -> SendTimerC;
+    //Node.RecieveTimer -> RecieveTimerC;
 
     components LocalTimeMilliC;
     Node.LocalTime -> LocalTimeMilliC;
