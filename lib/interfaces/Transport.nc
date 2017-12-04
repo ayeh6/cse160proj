@@ -112,6 +112,8 @@ interface Transport{
     */
    command error_t connect(socket_t fd, socket_addr_t * addr);
 
+   command error_t connectUser(socket_t fd, socket_addr_t * addr);
+
    /**
     * Closes the socket.
     * @param

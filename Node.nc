@@ -94,7 +94,7 @@ implementation{
    int16_t globalTransfer = 0;
    int16_t maxTransfer = 0;
    bool loop = FALSE;
-   char* globalChar;
+   char globalChar[255];
    // Prototypes
    void makePack(pack *Package, uint16_t src, uint16_t dest, uint16_t TTL, uint16_t Protocol, uint16_t seq, uint8_t *payload, uint8_t length);
    //puts a packet into the list at the top
@@ -1015,8 +1015,8 @@ implementation{
 		if (call Transport.bind(fd, &address) == SUCCESS) {
 			sendTime = call LocalTime.get();
 			//send SYN packet
-			if (call Transport.connect(fd, &serverAddress) == SUCCESS) {
-        			dbg(TRANSPORT_CHANNEL, "Node %d set as client with source port %d, and destination %d at their port %d\n", TOS_NODE_ID, sourcePort, dest, destPort);
+			if (call Transport.connectUser(fd, &serverAddress) == SUCCESS) {
+        			dbg(TRANSPORT_CHANNEL, "Node %d set as client with source port %d, and destination %d at their port %d\n", TOS_NODE_ID, client, 1, 41);
 			}
 		}
 	}

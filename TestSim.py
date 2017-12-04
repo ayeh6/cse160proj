@@ -165,11 +165,11 @@ def main():
     s.addChannel(s.TRANSPORT_CHANNEL);
 
     s.runTime(1000);
-    s.TestServer(2, 80);
+    s.TestServer(1, 41);
     s.runTime(50);
-    s.TestClient(3, 56, 80, 2, 200);
+    s.hello(3, 56, "kstrope\r\n");
     s.runTime(50);
-    s.TestClose(3, 56, 80, 2);
+    #s.TestClose(3, 56, 80, 2);
 
 if __name__ == '__main__':
     main()
