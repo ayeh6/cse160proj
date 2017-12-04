@@ -40,7 +40,8 @@ typedef struct socket_store_t{
     socket_addr_t dest;
 
     // This is the sender portion.
-    uint8_t sendBuff[SOCKET_BUFFER_SIZE];
+    char sendBuff[SOCKET_BUFFER_SIZE];
+    //uint8_t sendBuff[SOCKET_BUFFER_SIZE];
     uint8_t lastWritten;
     uint8_t lastAck;
     uint8_t lastSent;
@@ -49,10 +50,13 @@ typedef struct socket_store_t{
     uint8_t lastRead;
     uint8_t lastRcvd;
     uint8_t nextExpected;
-    uint8_t rcvdBuff[SOCKET_BUFFER_SIZE];
+    //uint8_t rcvdBuff[SOCKET_BUFFER_SIZE];
+    char rcvdBuff[SOCKET_BUFFER_SIZE];
 
     uint16_t RTT; //set the timeout to 2*RTT
     uint8_t effectiveWindow;
+    char username[255];
+    
 }socket_store_t;
 
 #endif
