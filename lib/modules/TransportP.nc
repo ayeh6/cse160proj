@@ -407,7 +407,7 @@ implementation {
     *    from the pass buffer. This may be shorter then bufflen
     */
     
-        command uint16_t Transport.read(socket_t fd, uint8_t *buff, uint16_t bufflen) {
+        command uint16_t Transport.read(socket_t fd, uint8_t *buff, uint16_t bufflen, uint8_t flag) {
                 socket_store_t temp, temp2;
                 uint16_t sockLen = call Sockets.size();
                 uint16_t i, j, at, buffcount;
@@ -430,88 +430,105 @@ implementation {
                 {
                         //do buffer things
                         temp = call Sockets.get(at);
-                        buffcount = 0;
-			//printf("effectivewindow is %d\n", temp.effectiveWindow);
-                        if(bufflen > temp.effectiveWindow)
-                        {
-                                buffable = temp.effectiveWindow;
-                        }
-                        else
-                        {
-                                buffable = bufflen;
-                        }
-                        j = temp.nextExpected;
-			//printf("buffable is %d\n", buffable);
-			//printf("\nprinting buff\n");
-			for(i = 0; i < 8; i++)
+			if(temp.flag == 9)
 			{
-				//printf("%d\n", buff[i]);
-			}
-			//printf("\n");
-                        for(i = 0; i < buffable; i++)
-                        {
-                                temp.rcvdBuff[j] = buff[i];
-                                j++;
-                                buffcount++;
-                                if(temp.effectiveWindow > 0)
-                                {
-                                        temp.effectiveWindow--;
-                                }
-				else
+				//user name store
+				for(i = 0; i < bufflen; i++)
 				{
-					break;
+					username[i] = buff[i];
 				}
-                        }
-			temp.rcvdBuff[j] = 255;
-                        temp.lastRcvd = i;
-                        if(temp.effectiveWindow == 0)
-                        {
-                                temp.nextExpected = 0;
-                        }
-                        else
-                        {
-                                temp.nextExpected = j+1;
-                        }
-
-			//dbg(TRANSPORT_CHANNEL, "printing out rcvdBuff\n");
-			i = 0;
-			if(temp.rcvdBuff[j-1] == '\n')
-			{
-				while(temp.rcvdBuff[i] != '\0')
+				for(i = 0; i < bufflen; i++)
 				{
-					printf("%d ", temp.rcvdBuff[i]);
-					temp.rcvdBuff[i] = '\0';
-					temp.effectiveWindow++;
-					i++;
-				}
-				temp.effectiveWindow = 128;
-				temp.nextExpected = 0;
-				for(i = 0; i < 128; i++)
-				{
-					temp.rcvdBuff[i] = '\0';
+					printf("%c", username[i]);
 				}
 				printf("\n");
+				printf("username is? %s\n",username);
 			}
-			//pushing stuff
-                        while(!call Sockets.isEmpty())
-                        {
-                                temp2 = call Sockets.front();
-                                if(temp.fd != temp2.fd)
-                                {
-                                        call TempSockets.pushfront(call Sockets.front());
-                                }
-                                else
-                                {
-				        call TempSockets.pushfront(temp);
-                                }
-                                call Sockets.popfront();
-                        }
-                        while(!call TempSockets.isEmpty())
-                        {
-                                call Sockets.pushfront(call TempSockets.front());
-                                call TempSockets.popfront();
-                        }
-                        return buffcount;
+			else
+			{
+                        	buffcount = 0;
+ 				//printf("effectivewindow is %d\n", temp.effectiveWindow);
+                        	if(bufflen > temp.effectiveWindow)
+                        	{
+                        	        buffable = temp.effectiveWindow;
+                        	}
+                        	else
+                        	{
+                        	        buffable = bufflen;
+                        	}
+                        	j = temp.nextExpected;
+				//printf("buffable is %d\n", buffable);
+				//printf("\nprinting buff\n");
+				for(i = 0; i < 8; i++)
+				{
+					//printf("%d\n", buff[i]);
+				}
+				//printf("\n");
+                        	for(i = 0; i < buffable; i++)
+                        	{
+                        	        temp.rcvdBuff[j] = buff[i];
+                        	        j++;
+                        	        buffcount++;
+                        	        if(temp.effectiveWindow > 0)
+                        	        {
+                        	                temp.effectiveWindow--;
+                        	        }
+					else
+					{
+						break;
+					}
+                        	}
+				temp.rcvdBuff[j] = 255;
+                        	temp.lastRcvd = i;
+                        	if(temp.effectiveWindow == 0)
+                        	{
+                        	        temp.nextExpected = 0;
+                        	}
+                        	else
+                        	{
+                        	        temp.nextExpected = j+1;
+                        	}
+	
+				//dbg(TRANSPORT_CHANNEL, "printing out rcvdBuff\n");
+				i = 0;
+				if(temp.rcvdBuff[j-1] == '\n')
+				{
+					while(temp.rcvdBuff[i] != '\0')
+					{
+						printf("%d ", temp.rcvdBuff[i]);
+						temp.rcvdBuff[i] = '\0';
+						temp.effectiveWindow++;
+						i++;
+					}
+					temp.effectiveWindow = 128;
+					temp.nextExpected = 0;
+					for(i = 0; i < 128; i++)
+					{
+						temp.rcvdBuff[i] = '\0';
+					}
+					printf("\n");
+				}
+				//pushing stuff
+	                        while(!call Sockets.isEmpty())
+	                        {
+	                                temp2 = call Sockets.front();
+	                                if(temp.fd != temp2.fd)
+	                                {
+	                                        call TempSockets.pushfront(call Sockets.front());
+	                                }
+        	                        else
+                	                {
+					        call TempSockets.pushfront(temp);
+        	                        }
+                	                call Sockets.popfront();
+                        	}
+                        	while(!call TempSockets.isEmpty())
+                        	{
+                                	call Sockets.pushfront(call TempSockets.front());
+                                	call TempSockets.popfront();
+                        	}
+                        	return buffcount;
+			}
                 }
         }
 
