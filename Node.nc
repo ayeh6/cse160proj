@@ -672,7 +672,7 @@ implementation{
                         		dbg(TRANSPORT_CHANNEL, "Closed.\n");
 				} 
 				if (temp->flag == 7 && tempAddr.port == temp2.src && temp2.state == LISTEN && tempAddr.addr == TOS_NODE_ID) {
-                 			//dbg(TRANSPORT_CHANNEL, "Syn packet recieved into port %d\n", temp2.src);
+                 			dbg(TRANSPORT_CHANNEL, "Syn2 packet recieved into port %d\n", temp2.src);
                  			packet.dest = myMsg->src;
                  			packet.src = TOS_NODE_ID;
                  			packet.seq = myMsg->seq + 1;
@@ -713,7 +713,7 @@ implementation{
 					uint16_t size;
                 			recieveTime = call LocalTime.get();
 				        RTT = recieveTime - sendTime;
-        				//dbg(TRANSPORT_CHANNEL, "SynAck packet recived into port %d, send = %d, recieve = %d, RTT = %d\n", temp2.src,  sendTime, recieveTime, RTT);
+        				dbg(TRANSPORT_CHANNEL, "SynAck2 packet recived into port %d, send = %d, recieve = %d, RTT = %d\n", temp2.src,  sendTime, recieveTime, RTT);
         				packet.dest = myMsg->src;
         				packet.src = TOS_NODE_ID;
         				packet.seq = myMsg->seq + 1;
@@ -765,10 +765,55 @@ implementation{
 					
 				}
 				if (temp->flag == 9 /*&& tempAddr.port == temp2.src && temp->state == ESTABLISHED && temp2.state == ESTABLISHED*/) {
+					arr = myMsg->payload;
+					buffLen = 8;
+					dbg(TRANSPORT_CHANNEL, "Recievced data2 from %d!\n", myMsg->src); 
+					call Transport.read(temp->fd, temp->sendBuff, buffLen);
+					for(j = 0; j < 128; j++)
+					{
+						//printf("%d\n", temp->sendBuff[j]);
+					}
+					packet.dest = myMsg->src;
+					packet.src = TOS_NODE_ID;
+					packet.seq = myMsg->seq + 1;
+					packet.TTL = myMsg->TTL;
+					packet.protocol = 4;
+					packetTemp = call Sockets.get(i);
+					packetTemp.flag = 10;
+					packetTemp.dest.port = temp->src;
+					packetTemp.dest.addr = myMsg->src;
+					packetTemp.nextExpected = buffLen + 1;
+					
+					memcpy(packet.payload, &packetTemp, (uint8_t) sizeof(packetTemp));
+
+					for (j = 0; j < call Confirmed.size(); j++) {
+        					destination = call Confirmed.get(j);
+        					if (packet.dest == destination.Dest)
+                					next = destination.Next;
+        					}
+					while (!call Sockets.isEmpty()) {
+        					change = call Sockets.front();
+        					call Sockets.popfront();
+        					if (change.fd == i && !found) {
+							change.lastAck = buffLen + 1;
+                					found = TRUE;
+                					call TempSockets.pushfront(change);
+        					}
+        					else {
+        					        call TempSockets.pushfront(change);
+        					}
+					}
+					while (!call TempSockets.isEmpty() ) {
+        					call Sockets.pushfront(call TempSockets.front());
+        					call TempSockets.popfront();
+					}
+					call Sender.send(packet, next);
+				}
+				if (temp->flag == 10 /*&& tempAddr.port == temp2.src && temp->state == ESTABLISHED && temp2.state == ESTABLISHED*/) {
 					uint16_t size;
 					uint16_t i;
 					char arr2[maxTransfer];
-					//dbg(TRANSPORT_CHANNEL, "Recieved dataAck from %d!\n", myMsg->src);
+					dbg(TRANSPORT_CHANNEL, "Recieved dataAck2 from %d!\n", myMsg->src);
 					//printf("post initial gTransfer: %d\n", globalTransfer);
 					if (globalTransfer > 0) {
 						//printf("hitting the first buffer\n");
