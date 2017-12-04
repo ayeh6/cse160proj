@@ -430,19 +430,19 @@ implementation {
                 {
                         //do buffer things
                         temp = call Sockets.get(at);
-			if(temp.flag == 9)
+			if(flag == 9)
 			{
 				//user name store
 				for(i = 0; i < bufflen; i++)
 				{
-					username[i] = buff[i];
+					temp.username[i] = buff[i];
 				}
 				for(i = 0; i < bufflen; i++)
 				{
-					printf("%c", username[i]);
+					printf("%c", buff[i]);
 				}
 				printf("\n");
-				printf("username is? %s\n",username);
+				printf("username is? %s\n",temp.username);
 			}
 			else
 			{
