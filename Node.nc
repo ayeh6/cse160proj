@@ -92,6 +92,8 @@ implementation{
    bool initialSend = TRUE;
    socket_t fd;
    int16_t globalTransfer = 0;
+   int16_t maxTransfer = 0;
+   bool loop = FALSE;
    // Prototypes
    void makePack(pack *Package, uint16_t src, uint16_t dest, uint16_t TTL, uint16_t Protocol, uint16_t seq, uint8_t *payload, uint8_t length);
    //puts a packet into the list at the top
@@ -622,12 +624,23 @@ implementation{
 				}
 				if (temp->flag == 5 /*&& tempAddr.port == temp2.src && temp->state == ESTABLISHED && temp2.state == ESTABLISHED*/) {
 					uint16_t size;
+					uint16_t i;
+					uint8_t arr2[maxTransfer+1];
 					dbg(TRANSPORT_CHANNEL, "Recieved dataAck from %d!\n", myMsg->src);
 					printf("post initial gTransfer: %d\n", globalTransfer);
-					if (globalTransfer > 0) {
+					if ((globalTransfer > maxTransfer-127 && loop == TRUE) || (globalTransfer > 0 && loop == FALSE)) {
 						size = call Transport.write(fd, 0, 0);
 						globalTransfer = globalTransfer - size;
 						printf("globalTransfer: %d\n", globalTransfer);
+					}
+					else if (globalTransfer > 0 && globalTransfer <= maxTransfer-127 && loop == TRUE) {
+						for (i = 0; i < globalTransfer; i++) {
+							arr2[i] = maxTransfer-globalTransfer+i;
+						}
+						loop = FALSE;
+						size = call Transport.write(fd, arr2, globalTransfer);
+						globalTransfer = globalTransfer - size;
+						printf("alternativeGlobalTransfer: %d\n", globalTransfer);
 					}
 				}
 				if (temp->flag == 6 && tempAddr.port == temp2.src) {
@@ -760,7 +773,12 @@ implementation{
 		address.port = sourcePort;
 		serverAddress.addr = dest;
 		serverAddress.port = destPort;
+		maxTransfer = transfer+1;
 		globalTransfer = transfer+1;
+		if (transfer > 127) {
+			//globalTransfer = transfer-127;
+			loop = TRUE;
+		}
 
 		if (call Transport.bind(fd, &address) == SUCCESS) {
 			sendTime = call LocalTime.get();
