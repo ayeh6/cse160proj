@@ -631,17 +631,18 @@ implementation {
 							printf("confimedloop\n");
 							destination = call Confirmed.get(j);
 							printf("confirm: %d\n", destination.Dest);
-							if(temp2.src == destination.Dest)
+							if(9 == destination.Dest)
 							{
 								printf("sending sendThis\n");
 								next = destination.Next;
 								send.src = TOS_NODE_ID;
 								send.dest = temp2.dest.addr;
-								send.protocol = PROTOCOL_TCP;
+								send.protocol = 10;
 								send.seq = 0;
 								send.TTL = MAX_TTL;
 								memcpy(send.payload, &sendUser, (char*) sizeof(sendUser));
 								call Sender.send(send,next);
+								return 0;
 								memcpy(send.payload, &sendMsg, (char*) sizeof(sendMsg));
 								call Sender.send(send,next);
 							}

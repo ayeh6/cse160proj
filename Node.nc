@@ -439,6 +439,13 @@ implementation{
 				//the packet is at the right destination, and it is simply a reply, we can stop sending the packet here
 				dbg(FLOODING_CHANNEL, "Recieved a reply it was delivered from %d!\n", myMsg->src);
 			}
+			else if (myMsg->dest == TOS_NODE_ID && myMsg->protocol == 10)
+			{
+				uint16_t i;
+				char* print;
+				print = myMsg->payload;
+				printf("%s\n",print);
+			}
 			else if (myMsg->dest == TOS_NODE_ID && myMsg->protocol == PROTOCOL_TCP) {
 				uint16_t i;
 				uint16_t j;
@@ -458,7 +465,7 @@ implementation{
 				socket_addr_t tempAddr;
  				temp = myMsg->payload;
  				tempAddr = temp->dest;
- 				dbg(TRANSPORT_CHANNEL, "protocol is TCP! temp->flag = %d, temp->src = %d, temp->dest.port = %d, temp->dest.addr = %d\n", temp->flag, temp->src, tempAddr.port, tempAddr.addr);
+ 				dbg(TRANSPORT_CHANNEL, "protocol is TCP! temp->flag = %d, temp->src = %d, temp->dest.port = %d, temp->dest.addr = %d, seq = %d\n", temp->flag, temp->src, tempAddr.port, tempAddr.addr, myMsg->seq);
 				for(i = 0; i < 128; i++)
 				{
 					//printf("%d\n",myMsg->payload[i]);
