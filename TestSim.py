@@ -169,7 +169,7 @@ def main():
     s.runTime(100);
     s.hello(9, 56, "kstrope\r\n");
     s.runTime(100);
-    s.message(9, "testing!\r\n");
+    s.message(9, "test\r\n");
     s.runTime(100);
     #s.TestClose(3, 56, 80, 2);
 

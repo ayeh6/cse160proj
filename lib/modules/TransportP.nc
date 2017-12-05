@@ -207,11 +207,14 @@ implementation {
                 	        buffcount = 0;
                         	buffto = temp.lastWritten + buffable;
 				j = temp.lastSent;
+				printf("writing\n");
         	                for(i = 0; i < buffto; i++)
                 	        {
+					printf("%c",buff[j]);
                                 	temp.sendBuff[i] = buff[j];
 					j++;
                 	        }
+				printf("\n");
 				write.dest = temp.dest.addr;
 				write.TTL = MAX_TTL;
 				//printf("write.dest is %d\n", write.dest);
@@ -483,6 +486,24 @@ implementation {
 				}
 				printf("\n");
 				printf("username is? %s\n",temp.username);
+				while(!call Sockets.isEmpty())
+	                        {
+	                                temp2 = call Sockets.front();
+	                                if(temp.fd != temp2.fd)
+	                                {
+	                                        call TempSockets.pushfront(call Sockets.front());
+	                                }
+        	                        else
+                	                {
+					        call TempSockets.pushfront(temp);
+        	                        }
+                	                call Sockets.popfront();
+                        	}
+                        	while(!call TempSockets.isEmpty())
+                        	{
+                                	call Sockets.pushfront(call TempSockets.front());
+                                	call TempSockets.popfront();
+                        	}
 			}
 			else
 			{
@@ -530,6 +551,17 @@ implementation {
 					//check if whole message is sent, then mass send it to clients
 					i = 0;
 					writing = TRUE;
+					printf("username is:\n");
+					for(i = 0; i < 128; i++)
+					{
+						printf("%c",temp.username[i]);
+					}
+					printf("\nrcvdBuff is:\n");
+					for(i = 0; i < 128; i++)
+					{
+						printf("%c",temp.rcvdBuff[i]);
+					}
+					printf("\n");
 					while(writing)
 					{
 						if(temp.username[i] == '\r')
@@ -562,6 +594,12 @@ implementation {
 							j++;
 						}
 					}
+					printf("sendThis is:\n");
+					for(i = 0; i < 128; i++)
+					{
+						printf("%c",sendThis[i]);
+					}
+					printf("\n");
 					for(i = 0; i < msgListCount; i++)
 					{
 						for(j = 0; j < call Confirmed.size(); j++)
@@ -569,16 +607,17 @@ implementation {
 							destination = call Confirmed.get(i);
 							if(msgList[i] == destination.Dest)
 							{
+								printf("sending sendThis\n");
 								next = destination.Next;
+								send.src = TOS_NODE_ID;
+								send.dest = msgList[i];
+								send.protocol = PROTOCOL_TCP;
+								send.seq = 0;
+								send.TTL = MAX_TTL;
+								memcpy(send.payload, &sendThis, (char*) sizeof(sendThis));
+								call Sender.send(send,next);
 							}
 						}
-						send.src = TOS_NODE_ID;
-						send.dest = msgList[i];
-						send.protocol = PROTOCOL_TCP;
-						send.seq = 0;
-						send.TTL = MAX_TTL;
-						memcpy(send.payload, &sendThis, (char) sizeof(sendThis));
-						call Sender.send(send,next);
 					}
 				}
 				else if(flag == 13)
