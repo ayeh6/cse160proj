@@ -229,19 +229,14 @@ implementation {
 					}
 					temp.flag = 11;
 				}
-				else if(flag == 12)
-				{
-					//server mass message to clients
-				}
 				else if(flag == 13)
 				{
 					//client whisper to server
+					temp.flag = 13;
 				}
-				else if(flag == 14)
-				{
-					//server sends whisper to client
 				else
 				{
+					//regular data
 					temp.flag = 4;
 				}
 				write.seq = i;
@@ -276,32 +271,13 @@ implementation {
 				{
 					temp.sendBuff[i] = sendBtemp[i];
 				}
-				if(//mass sending)
+				//something something find username and send
+				for(i = 0; i < call Confirmed.size(); i++)
 				{
-					for(j = 0; j < msgCount; j++)
+					destination = call Confirmed.get(i);
+					if(write.dest == destination.Dest)
 					{
-						for (i = 0; i < call Confirmed.size(); i++)
-						{
-							destination = call Confirmed.get(i);
-							if (write.dest == destination.Dest)
-							{
-								//printf("found dest\n");
-								next = destination.Next;
-							}
-						}
-					}
-				}
-				else //send to specific
-				{
-					//something something find username and send
-
-					for(i = 0; i < call Confirmed.size(); i++)
-					{
-						destination = call Confirmed.get(i);
-						if(write.dest == destination.Dest)
-						{
-							next = destination.Next;
-						}
+						next = destination.Next;
 					}
 				}
                 	        while(!call Sockets.isEmpty())
@@ -324,20 +300,22 @@ implementation {
 	                        }
 				//printf("sending tooooo: %d\n", next);
 				call Sender.send(write, next);
-
                         	return buffcount;
 			}
 			else
 			{
-				for(i = 0; i < 128; i++)
+				if(flag == 11)
 				{
-					//printf("%d ",temp.sendBuff[i]);
-					if(i%8 == 0 && i != 0)
-					{
-					//	printf("\n");
-					}
+					temp.flag = 11;
 				}
-				//printf("\n");
+				else if(flag == 13)
+				{
+					temp.flag = 13;
+				}
+				else
+				{
+					temp.flag = 4;
+				}
 				buffcount = 0;
 				lastAckd = temp.lastSent;
 				//printf("lastSent is %d\n", temp.lastSent);
@@ -378,7 +356,6 @@ implementation {
 				write.TTL = MAX_TTL;
 				//printf("write.dest is %d\n", write.dest);
 				//printf("lastwritten is %d\n", temp.lastWritten);
-				temp.flag = 4;
 				write.seq = i;
 				memcpy(write.payload, &temp, (uint8_t) sizeof(temp));
 				for(i = 0; i < 128; i++)
@@ -464,8 +441,15 @@ implementation {
                 uint16_t i, j, at, buffcount, next;
                 uint8_t buffsize, buffable, buffto, msgListCount;
 		uint8_t msgList[10];
+		char sendThis[128];
                 bool found = FALSE;
+		bool stringDone = FALSE;
+		bool writing;
 		msgListCount = 0;
+		for(i = 0; i < 128; i++)
+		{
+			sendThis[i] = '\0';
+		}
                 for(i = 0; i < sockLen; i++)
                 {
                         temp = call Sockets.get(i);
@@ -501,26 +485,23 @@ implementation {
 			}
 			else
 			{
-                        	buffcount = 0;
+				buffcount = 0;
  				//printf("effectivewindow is %d\n", temp.effectiveWindow);
-                        	if(bufflen > temp.effectiveWindow)
-                        	{
-                        	        buffable = temp.effectiveWindow;
+				if(bufflen > temp.effectiveWindow)
+				{
+					buffable = temp.effectiveWindow;
                         	}
                         	else
                         	{
                         	        buffable = bufflen;
                         	}
                         	j = temp.nextExpected;
-				//printf("buffable is %d\n", buffable);
-				//printf("\nprinting buff\n");
-				for(i = 0; i < 8; i++)
-				{
-					//printf("%d\n", buff[i]);
-				}
-				//printf("\n");
-                        	for(i = 0; i < buffable; i++)
+				for(i = 0; i < buffable; i++)
                         	{
+					if(buff[i] == '\n')
+					{
+						stringDone = TRUE;
+					}
                         	        temp.rcvdBuff[j] = buff[i];
                         	        j++;
                         	        buffcount++;
@@ -534,19 +515,76 @@ implementation {
 					}
                         	}
 				temp.rcvdBuff[j] = '\0';
-                        	temp.lastRcvd = i;
+				temp.lastRcvd = j - 1;
                         	if(temp.effectiveWindow == 0)
                         	{
                         	        temp.nextExpected = 0;
                         	}
                         	else
                         	{
-                        	        temp.nextExpected = j+1;
+                        	        temp.nextExpected = j;
                         	}
-	
-				//dbg(TRANSPORT_CHANNEL, "printing out rcvdBuff\n");
-				i = 0;
-				if(temp.rcvdBuff[j-1] == '\n')
+				if(flag == 11 && stringDone == TRUE)
+				{
+					//check if whole message is sent, then mass send it to clients
+					i = 0;
+					writing = TRUE;
+					while(writing)
+					{
+						if(temp.username[i] == '\r')
+						{
+							sendThis[i] = ':';
+						}
+						else if(temp.username[i] == '\n')
+						{
+							sendThis[i] = ' ';
+							writing = FALSE;
+						}
+						else
+						{
+							sendThis[i] = temp.username[i];
+						}
+						i++;
+					}
+					writing = TRUE;
+					j = 0;
+					while(writing)
+					{
+						if(temp.rcvdBuff[j] == '\0')
+						{
+							writing = FALSE;
+						}
+						else
+						{
+							sendThis[i] = temp.rcvdBuff[j];
+							i++;
+							j++;
+						}
+					}
+					for(i = 0; i < msgListCount; i++)
+					{
+						for(j = 0; j < call Confirmed.size(); j++)
+						{
+							destination = call Confirmed.get(i);
+							if(msgList[i] == destination.Dest)
+							{
+								next = destination.Next;
+							}
+						}
+						send.src = TOS_NODE_ID;
+						send.dest = msgList[i];
+						send.protocol = PROTOCOL_TCP;
+						send.seq = 0;
+						send.TTL = MAX_TTL;
+						memcpy(send.payload, &sendThis, (char) sizeof(sendThis));
+						call Sender.send(send,next);
+					}
+				}
+				else if(flag == 13)
+				{
+					//check if whole message is sent, then send to specific user
+				}
+				else //printing the whole rcvdBuff
 				{
 					while(temp.rcvdBuff[i] != '\0')
 					{
@@ -557,28 +595,6 @@ implementation {
 					}
 					temp.effectiveWindow = 128;
 					temp.nextExpected = 0;
-
-					send.src = TOS_NODE_ID;
-					send.protocol = PROTOCOL_TCP;
-					send.TTL = MAX_TTL;
-					send.seq = i;
-					memcpy(send.payload, &temp, (uint8_t) sizeof(temp));
-					for(i = 0; i < msgListCount; i++)
-					{
-						for(j = 0; j < call Confirmed.size(); j++)
-						{
-							destination = call Confirmed.get(j);
-							if(msgList[i] == destination.Dest)
-							{
-								next = destination.Next;
-							}
-						}
-						//send to next
-						call Sender.send(send, next);
-					}
-
-
-
 					for(i = 0; i < 128; i++)
 					{
 						temp.rcvdBuff[i] = '\0';
