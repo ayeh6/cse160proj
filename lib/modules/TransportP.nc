@@ -623,14 +623,14 @@ implementation {
 					printf("\n");
 					for(i = 0; i < sockLen; i++)
 					{
-						printf("sockiteration\n");
+						//printf("sockiteration\n");
 						temp2 = call Sockets.get(i);
 						printf("sock: %d\n", temp2.dest.port);
 						for(j = 0; j < call Confirmed.size(); j++)
 						{
-							printf("confimedloop\n");
+							//printf("confimedloop\n");
 							destination = call Confirmed.get(j);
-							printf("confirm: %d\n", destination.Dest);
+							//printf("confirm: %d\n", destination.Dest);
 							if(9 == destination.Dest)
 							{
 								printf("sending sendThis\n");

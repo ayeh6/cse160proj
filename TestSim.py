@@ -166,11 +166,11 @@ def main():
 
     s.runTime(1000);
     s.TestServer(1, 41);
-    s.runTime(300);
+    s.runTime(100);
     s.hello(9, 56, "kstrope\r\n");
-    s.runTime(300);
+    s.runTime(100);
     s.message(9, "test\r\n");
-    s.runTime(300);
+    s.runTime(100);
     #s.TestClose(3, 56, 80, 2);
 
 if __name__ == '__main__':
