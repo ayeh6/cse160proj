@@ -156,11 +156,13 @@ implementation {
 		char send[8];
 		char sendBtemp[128];
                 uint16_t i,j,at,buffcount,next;
-                uint8_t buffsize, buffable, buffto, lastAckd, sending;
+                uint8_t buffsize, buffable, buffto, lastAckd, sending, msgListCount;
+		uint8_t msgList[10];
                 bool found = FALSE;
 		write.src = TOS_NODE_ID;
 		write.protocol = PROTOCOL_TCP;
 		sockLen = call Sockets.size();
+		msgListCount = 0;
 		for(i = 0; i < 8; i++)
 		{
 			send[i] = '\0';
@@ -177,6 +179,8 @@ implementation {
                                 at = i;
                                 found = TRUE;
                         }
+			msgList[i] = temp.dest.addr;
+			msgListCount++;
                 }
                 if(found == FALSE)
                 {
@@ -272,16 +276,34 @@ implementation {
 				{
 					temp.sendBuff[i] = sendBtemp[i];
 				}
-
-				for (i = 0; i < call Confirmed.size(); i++)
+				if(//mass sending)
 				{
-					destination = call Confirmed.get(i);
-					if (write.dest == destination.Dest)
+					for(j = 0; j < msgCount; j++)
 					{
-						//printf("found dest\n");
-						next = destination.Next;
+						for (i = 0; i < call Confirmed.size(); i++)
+						{
+							destination = call Confirmed.get(i);
+							if (write.dest == destination.Dest)
+							{
+								//printf("found dest\n");
+								next = destination.Next;
+							}
+						}
 					}
-				}			
+				}
+				else //send to specific
+				{
+					//something something find username and send
+
+					for(i = 0; i < call Confirmed.size(); i++)
+					{
+						destination = call Confirmed.get(i);
+						if(write.dest == destination.Dest)
+						{
+							next = destination.Next;
+						}
+					}
+				}
                 	        while(!call Sockets.isEmpty())
                         	{
                                 	temp2 = call Sockets.front();
