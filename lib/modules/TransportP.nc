@@ -164,6 +164,7 @@ implementation {
 		write.protocol = PROTOCOL_TCP;
 		sockLen = call Sockets.size();
 		msgListCount = 0;
+		printf("we are at %d, flag %d\n", TOS_NODE_ID, flag);
 		for(i = 0; i < 8; i++)
 		{
 			send[i] = '\0';
@@ -241,7 +242,7 @@ implementation {
 				else
 				{
 					//regular data
-					temp.flag = 4;
+					temp.flag = 0;
 				}
 				write.seq = i;
 				lastAckd = temp.lastAck;
@@ -318,7 +319,7 @@ implementation {
 				}
 				else
 				{
-					temp.flag = 4;
+					temp.flag = 0;
 				}
 				buffcount = 0;
 				lastAckd = temp.lastSent;
@@ -450,6 +451,7 @@ implementation {
 		bool stringDone = FALSE;
 		bool writing;
 		msgListCount = 0;
+		printf("we are at %d, flag %d\n", TOS_NODE_ID, flag);
 		for(i = 0; i < 128; i++)
 		{
 			sendThis[i] = '\0';
@@ -488,6 +490,7 @@ implementation {
 				printf("username is? %s\n",temp.username);
 				while(!call Sockets.isEmpty())
 	                        {
+					printf("test1\n");
 	                                temp2 = call Sockets.front();
 	                                if(temp.fd != temp2.fd)
 	                                {
@@ -501,9 +504,11 @@ implementation {
                         	}
                         	while(!call TempSockets.isEmpty())
                         	{
+					printf("test2\n");
                                 	call Sockets.pushfront(call TempSockets.front());
                                 	call TempSockets.popfront();
                         	}
+				return bufflen;
 			}
 			else
 			{
@@ -549,19 +554,22 @@ implementation {
 				if(flag == 11 && stringDone == TRUE)
 				{
 					//check if whole message is sent, then mass send it to clients
+					temp.flag = 11;
 					i = 0;
 					writing = TRUE;
 					printf("username is:\n");
-					for(i = 0; i < 128; i++)
+					for(i = 0; i < 10; i++)
 					{
-						printf("%c",temp.username[i]);
+						//printf("%c",temp.username[i]);
 					}
-					printf("\nrcvdBuff is:\n");
+					printf("\n%s\n", temp.username);
+					printf("rcvdBuff is:\n%s\n",temp.rcvdBuff);
 					for(i = 0; i < 128; i++)
 					{
-						printf("%c",temp.rcvdBuff[i]);
+						//printf("%c",temp.rcvdBuff[i]);
 					}
 					printf("\n");
+					i=0;
 					while(writing)
 					{
 						if(temp.username[i] == '\r')
@@ -575,6 +583,7 @@ implementation {
 						}
 						else
 						{
+							//printf("%c",temp.username[i]);
 							sendThis[i] = temp.username[i];
 						}
 						i++;
@@ -583,22 +592,24 @@ implementation {
 					j = 0;
 					while(writing)
 					{
-						if(temp.rcvdBuff[j] == '\0')
+						if(temp.rcvdBuff[j] == '\n')
 						{
+							sendThis[i] = temp.rcvdBuff[j];
 							writing = FALSE;
 						}
 						else
 						{
 							sendThis[i] = temp.rcvdBuff[j];
-							i++;
-							j++;
 						}
+						i++;
+						j++;
 					}
 					printf("sendThis is:\n");
 					for(i = 0; i < 128; i++)
 					{
-						printf("%c",sendThis[i]);
+						//printf("%c",sendThis[i]);
 					}
+					printf("%s", sendThis);
 					printf("\n");
 					for(i = 0; i < msgListCount; i++)
 					{
@@ -624,7 +635,7 @@ implementation {
 				{
 					//check if whole message is sent, then send to specific user
 				}
-				else //printing the whole rcvdBuff
+				/*else //printing the whole rcvdBuff
 				{
 					while(temp.rcvdBuff[i] != '\0')
 					{
@@ -640,7 +651,7 @@ implementation {
 						temp.rcvdBuff[i] = '\0';
 					}
 					printf("\n");
-				}
+				}*/
 				//pushing stuff
 	                        while(!call Sockets.isEmpty())
 	                        {

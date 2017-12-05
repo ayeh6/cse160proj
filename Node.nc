@@ -769,7 +769,7 @@ implementation{
 					initialSend = TRUE;
 					//call SendTimer.startPeriodic(25000);
 					//send ACK before data
-        				call Sender.send(packet, next);
+        				//call Sender.send(packet, next);
 					//printf("initial GTransfer: %d\n", globalTransfer);
 					if (found) {
 						for (i = 0; i < globalTransfer; i++) {
