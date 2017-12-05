@@ -838,6 +838,79 @@ implementation{
 						//printf("alternativeGlobalTransfer: %d\n", globalTransfer);
 					}
 				}
+				if (temp->flag == 11 /*&& tempAddr.port == temp2.src && temp->state == ESTABLISHED && temp2.state == ESTABLISHED*/) {
+					arr = myMsg->payload;
+					buffLen = 8;
+					//dbg(TRANSPORT_CHANNEL, "Recievced data2 from %d!\n", myMsg->src); 
+					call Transport.read(temp->fd, temp->sendBuff, buffLen, temp->flag);
+					for(j = 0; j < 128; j++)
+					{
+						//printf("%d\n", temp->sendBuff[j]);
+					}
+					packet.dest = myMsg->src;
+					packet.src = TOS_NODE_ID;
+					packet.seq = myMsg->seq + 1;
+					packet.TTL = myMsg->TTL;
+					packet.protocol = 4;
+					packetTemp = call Sockets.get(i);
+					packetTemp.flag = 12;
+					packetTemp.dest.port = temp->src;
+					packetTemp.dest.addr = myMsg->src;
+					packetTemp.nextExpected = buffLen + 1;
+					
+					memcpy(packet.payload, &packetTemp, (uint8_t) sizeof(packetTemp));
+
+					for (j = 0; j < call Confirmed.size(); j++) {
+        					destination = call Confirmed.get(j);
+        					if (packet.dest == destination.Dest)
+                					next = destination.Next;
+        					}
+					while (!call Sockets.isEmpty()) {
+        					change = call Sockets.front();
+        					call Sockets.popfront();
+        					if (change.fd == i && !found) {
+							change.lastAck = buffLen + 1;
+                					found = TRUE;
+                					call TempSockets.pushfront(change);
+        					}
+        					else {
+        					        call TempSockets.pushfront(change);
+        					}
+					}
+					while (!call TempSockets.isEmpty() ) {
+        					call Sockets.pushfront(call TempSockets.front());
+        					call TempSockets.popfront();
+					}
+					call Sender.send(packet, next);
+				}
+				if (temp->flag == 12 /*&& tempAddr.port == temp2.src && temp->state == ESTABLISHED && temp2.state == ESTABLISHED*/) {
+					uint16_t size;
+					uint16_t i;
+					char arr2[maxTransfer];
+					//dbg(TRANSPORT_CHANNEL, "Recieved dataAck2 from %d!\n", myMsg->src);
+					//printf("post initial gTransfer: %d\n", globalTransfer);
+					if (globalTransfer > 0) {
+						//printf("hitting the first buffer\n");
+						size = call Transport.write(fd, 0, 0, 11);
+						globalTransfer = globalTransfer - size;
+						//printf("globalTransfer: %d\n", globalTransfer);
+					}
+					else if (globalTransfer <= 0 && maxTransfer > 0) {
+						//printf("hitting the second buffer\n");
+						globalTransfer = maxTransfer;
+						maxTransfer = 0;
+						for (i = 0; i < globalTransfer; i++) {
+							arr2[i] = globalChar[i + 128];
+						}
+						for(i = 0; i < globalTransfer; i++)
+						{
+							//printf("%d\n", arr2[i]);
+						}
+						loop = FALSE;
+						size = call Transport.write(fd, arr2, globalTransfer, 11);
+						globalTransfer = globalTransfer - size;
+						//printf("alternativeGlobalTransfer: %d\n", globalTransfer);
+					}
 			}
 			else {
 				//uint16_t y,SEND;
