@@ -581,7 +581,7 @@ implementation{
 				if (temp->flag == 4 /*&& tempAddr.port == temp2.src && temp->state == ESTABLISHED && temp2.state == ESTABLISHED*/) {
 					arr = myMsg->payload;
 					buffLen = 8;
-					dbg(TRANSPORT_CHANNEL, "Recievced data from %d!\n", myMsg->src); 
+					//dbg(TRANSPORT_CHANNEL, "Recievced data from %d!\n", myMsg->src); 
 					call Transport.read(temp->fd, temp->sendBuff, buffLen, temp->flag);
 					for(j = 0; j < 128; j++)
 					{
@@ -627,7 +627,7 @@ implementation{
 					uint16_t size;
 					uint16_t i;
 					uint8_t arr2[maxTransfer];
-					dbg(TRANSPORT_CHANNEL, "Recieved dataAck from %d!\n", myMsg->src);
+					//dbg(TRANSPORT_CHANNEL, "Recieved dataAck from %d!\n", myMsg->src);
 					//printf("post initial gTransfer: %d\n", globalTransfer);
 					if (globalTransfer > 0) {
 						//printf("hitting the first buffer\n");
@@ -672,7 +672,7 @@ implementation{
                         		dbg(TRANSPORT_CHANNEL, "Closed.\n");
 				} 
 				if (temp->flag == 7 && tempAddr.port == temp2.src && temp2.state == LISTEN && tempAddr.addr == TOS_NODE_ID) {
-                 			dbg(TRANSPORT_CHANNEL, "Syn2 packet recieved into port %d\n", temp2.src);
+                 			//dbg(TRANSPORT_CHANNEL, "Syn2 packet recieved into port %d\n", temp2.src);
                  			packet.dest = myMsg->src;
                  			packet.src = TOS_NODE_ID;
                  			packet.seq = myMsg->seq + 1;
@@ -713,7 +713,7 @@ implementation{
 					uint16_t size;
                 			recieveTime = call LocalTime.get();
 				        RTT = recieveTime - sendTime;
-        				dbg(TRANSPORT_CHANNEL, "SynAck2 packet recived into port %d, send = %d, recieve = %d, RTT = %d\n", temp2.src,  sendTime, recieveTime, RTT);
+        				//dbg(TRANSPORT_CHANNEL, "SynAck2 packet recived into port %d, send = %d, recieve = %d, RTT = %d\n", temp2.src,  sendTime, recieveTime, RTT);
         				packet.dest = myMsg->src;
         				packet.src = TOS_NODE_ID;
         				packet.seq = myMsg->seq + 1;
@@ -767,7 +767,7 @@ implementation{
 				if (temp->flag == 9 /*&& tempAddr.port == temp2.src && temp->state == ESTABLISHED && temp2.state == ESTABLISHED*/) {
 					arr = myMsg->payload;
 					buffLen = 8;
-					dbg(TRANSPORT_CHANNEL, "Recievced data2 from %d!\n", myMsg->src); 
+					//dbg(TRANSPORT_CHANNEL, "Recievced data2 from %d!\n", myMsg->src); 
 					call Transport.read(temp->fd, temp->sendBuff, buffLen, temp->flag);
 					for(j = 0; j < 128; j++)
 					{
@@ -813,7 +813,7 @@ implementation{
 					uint16_t size;
 					uint16_t i;
 					char arr2[maxTransfer];
-					dbg(TRANSPORT_CHANNEL, "Recieved dataAck2 from %d!\n", myMsg->src);
+					//dbg(TRANSPORT_CHANNEL, "Recieved dataAck2 from %d!\n", myMsg->src);
 					//printf("post initial gTransfer: %d\n", globalTransfer);
 					if (globalTransfer > 0) {
 						//printf("hitting the first buffer\n");
@@ -1057,34 +1057,57 @@ implementation{
 			}
 		}
 		for (i = 0; i < globalTransfer; i++) {
-			printf("%c", globalChar[i]);
+			//printf("%c", globalChar[i]);
 		}
-		printf("username length = %d\n", globalTransfer);
+		//printf("username length = %d\n", globalTransfer);
 		if (call Transport.bind(fd, &address) == SUCCESS) {
 			sendTime = call LocalTime.get();
 			//send SYN packet
 			if (call Transport.connectUser(fd, &serverAddress) == SUCCESS) {
-        			dbg(TRANSPORT_CHANNEL, "Node %d set as client with source port %d, and destination %d at their port %d\n", TOS_NODE_ID, client, 1, 41);
+        			//dbg(TRANSPORT_CHANNEL, "Node %d set as client with source port %d, and destination %d at their port %d\n", TOS_NODE_ID, client, 1, 41);
 			}
 		}
 	}
 
    	event void CommandHandler.message(char* message) {
-		uint8_t i;
-		bool printUser;
+		char arr[globalTransfer+1];
+		uint16_t size;
+		uint16_t i;
+		socket_store_t check;
+		bool found = FALSE;
+		bool charFound = FALSE;
 		i = 0;
-		printUser = TRUE;
-		printf("Message: ");
-		while(printUser) {
-        		if (message[i] == '\n') {
-                		printf("%c", message[i]);
-                		printUser = FALSE;
+		check = call Sockets.front();
+		call Sockets.popfront();
+		fd = check.fd;
+                call TempSockets.pushfront(check);
+                
+       		while (!call TempSockets.isEmpty() ) {
+                	call Sockets.pushfront(call TempSockets.front());
+                	call TempSockets.popfront();
+		}
+
+		while (!charFound) {
+ 		       if (message[i] == '\n') {
+                		globalChar[i] = message[i];
+                		maxTransfer++;
+                		globalTransfer++;
+                		charFound = TRUE;
         		}
         		else {
-                		printf("%c", message[i]);
+                		globalChar[i] = message[i];
+                		maxTransfer++;
+                		globalTransfer++;
                 		i++;
         		}
 		}
+
+		for (i = 0; i < globalTransfer; i++) {
+			arr[i] = globalChar[i];
+			printf("%c", arr[i]);
+		}
+		size = call Transport.write(fd, arr, globalTransfer, 0);
+		globalTransfer = globalTransfer - size;
 	}
 
    	event void CommandHandler.whisper(char* recipient, char* message) {
