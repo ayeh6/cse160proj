@@ -914,7 +914,7 @@ implementation{
 						//printf("globalTransfer: %d\n", globalTransfer);
 					}
 					else if (globalTransfer <= 0 && maxTransfer > 0) {
-						//printf("hitting the second buffer\n");
+						printf("hitting the second buffer\n");
 						globalTransfer = maxTransfer;
 						maxTransfer = 0;
 						for (i = 0; i < globalTransfer; i++) {
@@ -929,6 +929,7 @@ implementation{
 						globalTransfer = globalTransfer - size;
 						//printf("alternativeGlobalTransfer: %d\n", globalTransfer);
 					}
+				}
 			}
 			else {
 				//uint16_t y,SEND;
@@ -1169,6 +1170,7 @@ implementation{
 		bool found = FALSE;
 		bool charFound = FALSE;
 		i = 0;
+		maxTransfer = 0;
 		check = call Sockets.front();
 		call Sockets.popfront();
 		fd = check.fd;
@@ -1182,21 +1184,21 @@ implementation{
 		while (!charFound) {
  		       if (message[i] == '\n') {
                 		globalChar[i] = message[i];
-                		maxTransfer++;
+                		//maxTransfer++;
                 		globalTransfer++;
                 		charFound = TRUE;
         		}
         		else {
                 		globalChar[i] = message[i];
-                		maxTransfer++;
+                		//maxTransfer++;
                 		globalTransfer++;
                 		i++;
         		}
 		}
-		printf("input:\n");
+		//printf("input:\n");
 		for (i = 0; i < globalTransfer; i++) {
 			arr[i] = globalChar[i];
-			printf("%c", arr[i]);
+			//printf("%c", arr[i]);
 		}
 		//printf("input: %s", arr);
 		size = call Transport.write(fd, arr, globalTransfer, 11);
