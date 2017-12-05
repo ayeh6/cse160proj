@@ -280,6 +280,7 @@ implementation {
 				for(i = 0; i < call Confirmed.size(); i++)
 				{
 					destination = call Confirmed.get(i);
+					printf("confirm: %d\n", destination.Dest);
 					if(write.dest == destination.Dest)
 					{
 						next = destination.Next;
@@ -446,7 +447,8 @@ implementation {
                 uint16_t i, j, at, buffcount, next;
                 uint8_t buffsize, buffable, buffto, msgListCount;
 		uint8_t msgList[10];
-		char sendThis[128];
+		char sendUser[128];
+		char sendMsg[128];
                 bool found = FALSE;
 		bool stringDone = FALSE;
 		bool writing;
@@ -454,7 +456,8 @@ implementation {
 		printf("we are at %d, flag %d\n", TOS_NODE_ID, flag);
 		for(i = 0; i < 128; i++)
 		{
-			sendThis[i] = '\0';
+			sendMsg[i] = '\0';
+			sendUser[i] = '\0';
 		}
                 for(i = 0; i < sockLen; i++)
                 {
@@ -564,68 +567,82 @@ implementation {
 					}
 					printf("\n%s\n", temp.username);
 					printf("rcvdBuff is:\n%s\n",temp.rcvdBuff);
-					for(i = 0; i < 128; i++)
-					{
-						//printf("%c",temp.rcvdBuff[i]);
-					}
-					printf("\n");
 					i=0;
 					while(writing)
 					{
 						if(temp.username[i] == '\r')
 						{
-							sendThis[i] = ':';
+							sendUser[i] = ':';
 						}
 						else if(temp.username[i] == '\n')
 						{
-							sendThis[i] = ' ';
+							sendUser[i] = ' ';
 							writing = FALSE;
 						}
 						else
 						{
 							//printf("%c",temp.username[i]);
-							sendThis[i] = temp.username[i];
+							sendUser[i] = temp.username[i];
 						}
 						i++;
 					}
 					writing = TRUE;
+					for(j = 0; j < 6; j++)
+					{
+						//sendThis[i] = temp.rcvdBuff[j];
+						//i++;
+						printf("%c\n", temp.rcvdBuff[j]);
+					}
 					j = 0;
 					while(writing)
 					{
 						if(temp.rcvdBuff[j] == '\n')
 						{
-							sendThis[i] = temp.rcvdBuff[j];
+							sendMsg[j] = temp.rcvdBuff[j];
+							j++;
+							i++;
 							writing = FALSE;
+						}
+						else if(temp.rcvdBuff[j] == '\0')
+						{
+							j++;
 						}
 						else
 						{
-							sendThis[i] = temp.rcvdBuff[j];
+							sendMsg[j] = temp.rcvdBuff[j];
+							j++;
+							i++;
 						}
-						i++;
-						j++;
 					}
 					printf("sendThis is:\n");
 					for(i = 0; i < 128; i++)
 					{
 						//printf("%c",sendThis[i]);
 					}
-					printf("%s", sendThis);
+					printf("%s", sendMsg);
 					printf("\n");
-					for(i = 0; i < msgListCount; i++)
+					for(i = 0; i < sockLen; i++)
 					{
+						printf("sockiteration\n");
+						temp2 = call Sockets.get(i);
+						printf("sock: %d\n", temp2.dest.port);
 						for(j = 0; j < call Confirmed.size(); j++)
 						{
-							destination = call Confirmed.get(i);
-							if(msgList[i] == destination.Dest)
+							printf("confimedloop\n");
+							destination = call Confirmed.get(j);
+							printf("confirm: %d\n", destination.Dest);
+							if(temp2.src == destination.Dest)
 							{
 								printf("sending sendThis\n");
 								next = destination.Next;
 								send.src = TOS_NODE_ID;
-								send.dest = msgList[i];
+								send.dest = temp2.dest.addr;
 								send.protocol = PROTOCOL_TCP;
 								send.seq = 0;
 								send.TTL = MAX_TTL;
-								memcpy(send.payload, &sendThis, (char*) sizeof(sendThis));
+								memcpy(send.payload, &sendUser, (char*) sizeof(sendUser));
+								call Sender.send(send,next);
+								memcpy(send.payload, &sendMsg, (char*) sizeof(sendMsg));
 								call Sender.send(send,next);
 							}
 						}
