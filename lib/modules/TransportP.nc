@@ -33,6 +33,7 @@ implementation {
 		insert.lastSent = 0;
 		insert.lastRcvd = 0;
 		insert.lastRead = 0;
+		insert.src = TOS_NODE_ID;
 		fd = call Sockets.size();
 		for(i = 0; i < 128; i++)
 		{
