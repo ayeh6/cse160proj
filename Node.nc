@@ -1101,12 +1101,13 @@ implementation{
                 		i++;
         		}
 		}
-
+		printf("input:\n");
 		for (i = 0; i < globalTransfer; i++) {
 			arr[i] = globalChar[i];
 			printf("%c", arr[i]);
 		}
-		size = call Transport.write(fd, arr, globalTransfer, 0);
+		//printf("input: %s", arr);
+		size = call Transport.write(fd, arr, globalTransfer, 11);
 		globalTransfer = globalTransfer - size;
 	}
 
