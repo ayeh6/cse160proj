@@ -445,6 +445,8 @@ implementation{
 				uint16_t* arr;
 				uint16_t RTT1;
 				uint16_t buffLen;
+				char* print;
+				bool printFound;
 				bool found;
  				LinkState destination;
  				uint16_t next;
@@ -456,10 +458,26 @@ implementation{
 				socket_addr_t tempAddr;
  				temp = myMsg->payload;
  				tempAddr = temp->dest;
- 				//dbg(TRANSPORT_CHANNEL, "protocol is TCP! temp->flag = %d, temp->src = %d, temp->dest.port = %d, temp->dest.addr = %d\n", temp->flag, temp->src, tempAddr.port, tempAddr.addr);
+ 				dbg(TRANSPORT_CHANNEL, "protocol is TCP! temp->flag = %d, temp->src = %d, temp->dest.port = %d, temp->dest.addr = %d\n", temp->flag, temp->src, tempAddr.port, tempAddr.addr);
 				for(i = 0; i < 128; i++)
 				{
 					//printf("%d\n",myMsg->payload[i]);
+				}
+				if (myMsg->seq == 0) {
+					printf("check\n");
+					i = 0;
+					printFound = FALSE;
+					print = myMsg->payload;
+					while (!printFound) {
+						if (print[i] == '\n') {
+							printFound = TRUE;
+							printf("%c", print[i]);
+						}
+						else {
+							printf("%c", print[i]);
+							i++;
+						}
+					}
 				}
  				for (i = 0; i < call Sockets.size(); i++) {
 			         	temp2 = call Sockets.get(i);
@@ -997,6 +1015,7 @@ implementation{
 
 	event void CommandHandler.setTestServer(uint16_t port){
 		socket_addr_t address;
+		printf("check2\n");
 		fd = call Transport.socket();
 		address.addr = TOS_NODE_ID;
 		address.port = port;
